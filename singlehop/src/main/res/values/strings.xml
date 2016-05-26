@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">BleMesh</string>
+
+    <!--  <string name="share_file">Share File</string> -->
+
+    <!-- MainActivity -->
+    <string name="receive">Receive</string>
+    <string name="sending_quote">Sending Quote</string>
+    <string name="as_name">as \'%1$s\'</string>
+    <string name="receiving_quote">Receiving Quote</string>
+    <string name="quote_received">Quote Received</string>
+    <string name="ok">OK</string>
+    <string name="quote_and_author">\'%1$s\'\n by %2$s</string>
+    <string name="quote_sent">Quote Sent</string>
+
+    <!-- WelcomeFragment -->
+    <string name="hello">hello</string>
+    <string name="user_alias_hint">My Name</string>
+    <string name="choose_a_name">choose a name</string>
+
+    <!-- WritingFragment -->
+    <string name="quote_placeholder">And the end of all our exploring will be to arrive where we started and know the place for the first time.</string>
+    <string name="author_placeholder">Thomas Stearns Eliot</string>
+    <string name="send">Send</string>
+    <string name="title_activity_advanced_use">AdvancedUseActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+</resources>

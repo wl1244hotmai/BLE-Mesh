@@ -1,0 +1,28 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:fitsSystemWindows="true"
+    tools:context=".MainActivity">
+
+    <Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:titleTextAppearance="@android:style/TextAppearance.Material.Large.Inverse"
+        android:subtitleTextAppearance="@android:style/TextAppearance.Material.Medium.Inverse"
+        android:background="@color/primary"
+        android:paddingBottom="8dp"/>
+    <!-- on API 21 background will be ?attr/colorPrimary -->
+    <!-- on API 21 minHeight will be ?attr/actionBarSize-->
+
+    <!-- The rest of your content view -->
+    <FrameLayout
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" />
+
+</RelativeLayout>
