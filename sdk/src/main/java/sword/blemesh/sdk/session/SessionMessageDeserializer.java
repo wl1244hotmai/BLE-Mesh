@@ -73,6 +73,8 @@ public class SessionMessageDeserializer {
     private int headerLength;
     private int bodyLength;
     private int bodyBytesReceived;
+    private int dataBytesReceived;  //use dataBytesReceived and dataBytesProcessed these two global variety instead of local
+    private int dataBytesProcessed; //use dataBytesReceived and dataBytesProcessed these two global variety instead of local
     private int bufferOffset;
 
     public SessionMessageDeserializer(Context context, SessionMessageDeserializerCallback callback) {
@@ -104,6 +106,8 @@ public class SessionMessageDeserializer {
         headerLength      = 0;
         bodyLength        = 0;
         bodyBytesReceived = 0;
+        dataBytesReceived = 0;
+        dataBytesProcessed = 0;
 
         if (clear) {
             bufferOffset  = 0;
@@ -177,8 +181,8 @@ public class SessionMessageDeserializer {
     }
 
     private void processData(int bytesJustReceived) {
-        Timber.d("Received %d bytes", bytesJustReceived);
-        int dataBytesProcessed = 0;
+        dataBytesReceived += bytesJustReceived;
+        Timber.d("Received %d bytes this time, so far has received overall %s bytes", bytesJustReceived, dataBytesReceived);
 
         /** Deserialize SessionMessage Header version byte, if not yet done since construction
          * or last call to {@link #reset()}
@@ -237,7 +241,7 @@ public class SessionMessageDeserializer {
                 headers = toMap(jsonHeader);
                 bodyLength = (int) headers.get(SessionMessage.HEADER_BODY_LENGTH);
                 sessionMessage = sessionMessageFromHeaders(headers);
-                Timber.d(String.format("Deserialized %s header indicating body length %d", (String) headers.get(SessionMessage.HEADER_TYPE), (int) headers.get(SessionMessage.HEADER_BODY_LENGTH)));
+                Timber.d("Deserialized %s header indicating body length %d", headers.get(SessionMessage.HEADER_TYPE), headers.get(SessionMessage.HEADER_BODY_LENGTH));
                 if (sessionMessage != null && callback != null)
                     callback.onHeaderReady(this, sessionMessage);
             } catch (JSONException | UnsupportedEncodingException e) {
@@ -264,7 +268,7 @@ public class SessionMessageDeserializer {
                 getMessageIndex() >= getPrefixAndHeaderLengthBytes()) {
 
             try {
-                int bodyBytesJustReceived = bytesJustReceived - dataBytesProcessed;
+                int bodyBytesJustReceived = dataBytesReceived - dataBytesProcessed;
 
                 if (bodyLength > BODY_SIZE_CUTOFF_BYTES) {
 

@@ -22,7 +22,6 @@ import hugo.weaving.DebugLog;
 import sword.blemesh.sdk.transport.Transport;
 import sword.blemesh.sdk.transport.TransportState;
 import sword.blemesh.sdk.transport.ble.BLETransport;
-import sword.blemesh.sdk.transport.wifi.WifiTransport;
 import timber.log.Timber;
 
 /**
@@ -153,7 +152,7 @@ public class SessionManager implements Transport.TransportCallback,
 
         SessionMessageSerializer sender = identifierSenders.get(targetRecipientIdentifier);
 
-        transport.sendData(sender.getNextChunk(transport.getMtuForIdentifier(targetRecipientIdentifier)),
+        transport.sendData(sender.getNextChunk(transport.getLongWriteBytes()),
                                targetRecipientIdentifier);
 //        else
 //            Timber.d("Send queued. No transport available for identifier %s", targetRecipientIdentifier);
@@ -231,8 +230,7 @@ public class SessionManager implements Transport.TransportCallback,
      * Get the current preferred available transport for the given peer
      * This is generally the available transport with the highest bandwidth
      *
-     * @return either {@link sword.blemesh.sdk.transport.wifi.WifiTransport#TRANSPORT_CODE}
-     *                 or {@link sword.blemesh.sdk.transport.ble.BLETransport#TRANSPORT_CODE},
+     * @return either {@link sword.blemesh.sdk.transport.ble.BLETransport#TRANSPORT_CODE},
      *                 or -1 if none available.
      */
     public int getTransportCodeForPeer(Peer peer) {
@@ -266,7 +264,6 @@ public class SessionManager implements Transport.TransportCallback,
         // will only be activated upon request
         transports = new TreeSet<>();
         transports.add(new BLETransport(context, serviceName, this));
-        transports.add(new WifiTransport(context, serviceName, this));
     }
 
     private Transport getAvailableTransportByCode(int transportCode) {
@@ -357,6 +354,7 @@ public class SessionManager implements Transport.TransportCallback,
         if (!identifierReceivers.containsKey(identifier))
             identifierReceivers.put(identifier, new SessionMessageDeserializer(context, this));
 
+        //process received data in SessionMessageDeserializer
         identifierReceivers.get(identifier)
                            .dataReceived(data);
     }
@@ -431,7 +429,7 @@ public class SessionManager implements Transport.TransportCallback,
                 Timber.w("Cannot report %s message send, %s not yet identified",
                     message.getType(), identifier);
 
-            byte[] toSend = sender.getNextChunk(transport.getMtuForIdentifier(identifier));
+            byte[] toSend = sender.getNextChunk(transport.getLongWriteBytes());
             if (toSend != null)
                 transport.sendData(toSend, identifier);
         } else
@@ -468,7 +466,7 @@ public class SessionManager implements Transport.TransportCallback,
 
                     boolean sendingIdentity = sender.getCurrentMessage() instanceof IdentityMessage;
 
-                    byte[] toSend = sender.getNextChunk(transport.getMtuForIdentifier(identifier));
+                    byte[] toSend = sender.getNextChunk(transport.getLongWriteBytes());
                     if (toSend == null) return;
 
                     if (transport.sendData(toSend, identifier)) {

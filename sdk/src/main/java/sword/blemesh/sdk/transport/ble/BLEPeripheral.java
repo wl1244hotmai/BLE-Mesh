@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import sword.blemesh.sdk.transport.ConnectionGovernor;
 import sword.blemesh.sdk.transport.Transport;
 import timber.log.Timber;
 
@@ -45,17 +44,12 @@ public class BLEPeripheral {
     /** Map of connected device addresses to devices */
     private BiMap<String, BluetoothDevice> connectedDevices = HashBiMap.create();
 
-    public interface BLEPeripheralConnectionGovernor {
-        public boolean shouldConnectToCentral(BluetoothDevice potentialPeer);
-    }
-
     private Context context;
     private UUID serviceUUID;
     private BluetoothAdapter btAdapter;
     private BluetoothLeAdvertiser advertiser;
     private BluetoothGattServer gattServer;
     private BluetoothGattServerCallback gattCallback;
-    private ConnectionGovernor connectionGovernor;
     private BLETransportCallback transportCallback;
 
     private boolean isAdvertising = false;
@@ -171,10 +165,6 @@ public class BLEPeripheral {
         return connectedDevices;
     }
 
-    public void setConnectionGovernor(ConnectionGovernor governor) {
-        connectionGovernor = governor;
-    }
-
     // </editor-fold>
 
     //<editor-fold desc="Private API">
@@ -229,13 +219,7 @@ public class BLEPeripheral {
                         gattServer.cancelConnection(device);
                         return;
                     }
-
-                    if (connectionGovernor != null && !connectionGovernor.shouldConnectToAddress(device.getAddress())) {
-                        // The ConnectionGovernor denied the connection. Cancel connection
-                        Timber.d("Denied connection. ConnectionGovernor denied " + device.getAddress());
-                        gattServer.cancelConnection(device);
-                        return;
-                    } else {
+                    else {
                         // Allow connection to proceed. Mark device connected
                         Timber.d("Accepted connection to " + device.getAddress());
                         connectedDevices.put(device.getAddress(), device);

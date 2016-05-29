@@ -5,7 +5,6 @@ import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 
 import sword.blemesh.sdk.crypto.KeyPair;
-import sword.blemesh.sdk.transport.wifi.WifiTransport;
 import timber.log.Timber;
 
 /**
@@ -21,12 +20,6 @@ public class LocalPeer extends Peer {
 
         super(keyPair.publicKey, alias, null, 0, 0);
         this.privateKey = keyPair.secretKey;
-        transports = doesDeviceSupportWifiDirect(context) ?
-                        transports | WifiTransport.TRANSPORT_CODE :
-                        transports;
-
-        Timber.d("LocalPeer supports WifiDirect %b %b", doesDeviceSupportWifiDirect(context), supportsTransportWithCode(WifiTransport.TRANSPORT_CODE));
-
     }
 
     private static boolean doesDeviceSupportWifiDirect(Context ctx) {

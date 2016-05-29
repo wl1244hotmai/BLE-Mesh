@@ -71,16 +71,24 @@ public abstract class Transport implements Comparable<Transport> {
      *  This value must be a valid bit field value that does
      *  not conflict with any existing transports.
      *
-     *  see {@link sword.blemesh.sdk.transport.wifi.WifiTransport#TRANSPORT_CODE}
      *  see {@link sword.blemesh.sdk.transport.ble.BLETransport#TRANSPORT_CODE}
      */
     public abstract int getTransportCode();
 
+
+    public abstract int getLongWriteBytes();
+
     /**
      * @return the Maximum Transmission Unit, in bytes, or 0 if unlimited.
+     *
+     *
+     * due to sone devices don't support transport over 20 byes,
+     * mtu in BLE is temporarily deprecated.
+     * instead use {@link #getLongWriteBytes()} for BLE.
      */
     public abstract int getMtuForIdentifier(String identifier);
 
+    @Deprecated
     @Override
     public int compareTo (@NonNull Transport another) {
         return getMtuForIdentifier("") - another.getMtuForIdentifier("");

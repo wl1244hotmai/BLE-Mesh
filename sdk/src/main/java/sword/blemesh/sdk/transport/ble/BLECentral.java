@@ -37,7 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import sword.blemesh.sdk.DataUtil;
 import sword.blemesh.sdk.R;
-import sword.blemesh.sdk.transport.ConnectionGovernor;
 import sword.blemesh.sdk.transport.Transport;
 import timber.log.Timber;
 
@@ -51,7 +50,6 @@ import timber.log.Timber;
  *
  * Created by davidbrodsky on 10/2/14.
  */
-// TEMPORARY - Should add 18 APIs for use on older platforms
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class BLECentral {
     public static final String TAG = "BLECentral";
@@ -80,7 +78,6 @@ public class BLECentral {
     private BluetoothAdapter btAdapter;
     private ScanCallback scanCallback;
     private BluetoothLeScanner scanner;
-    private ConnectionGovernor connectionGovernor;
     private BLETransportCallback transportCallback;
 
     private boolean isScanning = false;
@@ -92,10 +89,6 @@ public class BLECentral {
         this.serviceUUID = serviceUUID;
         this.context = context;
         init();
-    }
-
-    public void setConnectionGovernor(ConnectionGovernor governor) {
-        connectionGovernor = governor;
     }
 
     public void setTransportCallback(BLETransportCallback callback) {
@@ -213,11 +206,6 @@ public class BLECentral {
                     return;
                 }
 
-                if (connectionGovernor != null && !connectionGovernor.shouldConnectToAddress(scanResult.getDevice().getAddress())) {
-                    // If the BLEConnectionGovernor says we should not bother connecting to this peer, don't
-                    //Timber.d("Denied connection. ConnectionGovernor denied  " + scanResult.getDevice().getAddress());
-                    return;
-                }
                 connectingDevices.add(scanResult.getDevice().getAddress());
                 Timber.d("Initiating connection to " + scanResult.getDevice().getAddress());
                 scanResult.getDevice().connectGatt(context, false, new BluetoothGattCallback() {

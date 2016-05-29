@@ -164,26 +164,9 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
          * Notification of the result of this call is reported by
          * {@link BleMeshService.Callback#onPeerTransportUpdated(BleMeshService.ServiceBinder binder, sword.blemesh.sdk.session.Peer, int, Exception)}
          *
-         * You can check that a peer supports an additional transport via
-         * {@link Peer#supportsTransportWithCode(int)} using a transport code such as
-         * {@link sword.blemesh.sdk.transport.wifi.WifiTransport#TRANSPORT_CODE}
-         *
          * When an upgraded transport is established,
          * it may require the base transport, currently {@link sword.blemesh.sdk.transport.ble.BLETransport},
          * be suspended to prevent interference.
-         *
-         * At this time the only available supplementary transport is
-         * {@link sword.blemesh.sdk.transport.wifi.WifiTransport}
-         * which requires the host application add the following permissions:
-         *
-         * <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-         * <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-         * <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-         * <uses-permission android:name="android.permission.INTERNET" />
-         * <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-         *
-         * Note that upgrade transports, such as WiFi, consume considerably more power
-         * and should be downgraded as soon as possible via {@link #downgradeTransport()}
          */
         public void requestTransportUpgrade(Peer remotePeer) {
             sessionManager.requestTransportUpgrade(remotePeer);

@@ -47,6 +47,15 @@ import timber.log.Timber;
  */
 public class BLETransport extends Transport implements BLETransportCallback {
 
+    /**
+     * BLE in android supports automatically divide long data into several segments.
+     * while in practise, the upper limit may be 600 bytes.
+     * here we change aitshare's DEFAULT_MTU_BYTES to DEFAULT_LONG_WRITE_BYTES,
+     * from 155 t0 512.
+     */
+    public static final int DEFAULT_LONG_WRITE_BYTES = 512;
+
+    @Deprecated
     public static final int DEFAULT_MTU_BYTES = 155;
 
     public static final int TRANSPORT_CODE = 1;
@@ -157,6 +166,17 @@ public class BLETransport extends Transport implements BLETransportCallback {
         return TRANSPORT_CODE;
     }
 
+
+    public int getLongWriteBytes(){
+        return DEFAULT_LONG_WRITE_BYTES;
+    }
+
+    /**
+     * due to sone devices don't support transport over 20 byes,
+     * mtu in BLE is temporarily deprecated.
+     * instead use {@link #getLongWriteBytes()}
+     */
+    @Deprecated
     @Override
     public int getMtuForIdentifier(String identifier) {
         Integer mtu = central.getMtuForIdentifier(identifier);
@@ -211,17 +231,17 @@ public class BLETransport extends Transport implements BLETransportCallback {
             outBuffers.put(identifier, new ArrayDeque<byte[]>());
         }
 
-        int mtu = getMtuForIdentifier(identifier);
+        int longWriteBytes = getLongWriteBytes();
 
         int readIdx = 0;
         while (readIdx < data.length) {
 
-            if (data.length - readIdx > mtu) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream(mtu);
-                bos.write(data, readIdx, mtu);
+            if (data.length - readIdx > longWriteBytes) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(longWriteBytes);
+                bos.write(data, readIdx, longWriteBytes);
                 Timber.d("Adding %d byte chunk to queue", bos.size());
                 outBuffers.get(identifier).add(bos.toByteArray());
-                readIdx += mtu;
+                readIdx += longWriteBytes;
             } else {
                 Timber.d("Adding %d byte chunk to queue", data.length);
                 outBuffers.get(identifier).add(data);

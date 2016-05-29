@@ -19,10 +19,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.activity.AdvancedUseActivity"
-            android:label="@string/title_activity_advanced_use" >
-        </activity>
     </application>
 
 </manifest>
