@@ -9,7 +9,7 @@ import sword.blemesh.sdk.transport.Transport;
  */
 public interface BLETransportCallback {
 
-    public static enum DeviceType { CENTRAL, PERIPHERAL }
+    public static enum DeviceType {GATT, GATT_SERVER}
 
     public void dataReceivedFromIdentifier(DeviceType deviceType,
                                            byte[] data,

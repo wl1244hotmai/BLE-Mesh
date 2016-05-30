@@ -1,10 +1,13 @@
 package sword.blemesh.sdk.transport.ble;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.widget.Toast;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -16,16 +19,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import sword.blemesh.sdk.R;
 import sword.blemesh.sdk.transport.Transport;
 import timber.log.Timber;
 
 /**
  * Bluetooth Low Energy Transport. Requires Android 5.0.
- *
+ * <p>
  * Note that only the Central device reports device connection events to {@link #callback}
  * in this implementation.
  * See {@link #identifierUpdated(sword.blemesh.sdk.transport.ble.BLETransportCallback.DeviceType, String, sword.blemesh.sdk.transport.Transport.ConnectionStatus, Map)}
- *
+ * <p>
  * Created by davidbrodsky on 2/21/15.
  */
 
@@ -59,24 +63,28 @@ public class BLETransport extends Transport implements BLETransportCallback {
     public static final int DEFAULT_MTU_BYTES = 155;
 
     public static final int TRANSPORT_CODE = 1;
+    public static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private final UUID serviceUUID;
-    private final UUID dataUUID    = UUID.fromString("72A7700C-859D-4317-9E35-D7F5A93005B1");
+    private final UUID dataUUID = UUID.fromString("72A7700C-859D-4317-9E35-D7F5A93005B1");
 
     /** Identifier -> Queue of outgoing buffers */
     private HashMap<String, ArrayDeque<byte[]>> outBuffers = new HashMap<>();
 
     private final BluetoothGattCharacteristic dataCharacteristic
             = new BluetoothGattCharacteristic(dataUUID,
-                                              BluetoothGattCharacteristic.PROPERTY_READ |
-                                              BluetoothGattCharacteristic.PROPERTY_WRITE |
-                                              BluetoothGattCharacteristic.PROPERTY_INDICATE,
+            BluetoothGattCharacteristic.PROPERTY_READ |
+                    BluetoothGattCharacteristic.PROPERTY_WRITE |
+                    BluetoothGattCharacteristic.PROPERTY_INDICATE,
 
-                                              BluetoothGattCharacteristic.PERMISSION_READ |
-                                              BluetoothGattCharacteristic.PERMISSION_WRITE);
+            BluetoothGattCharacteristic.PERMISSION_READ |
+                    BluetoothGattCharacteristic.PERMISSION_WRITE);
 
-    private BLECentral    central;
+    private BLECentral central;
     private BLEPeripheral peripheral;
+    private BLEGattClients gattClients;
+    private BLEGattServer gattServer;
+    private BluetoothAdapter btAdapter;
 
     public BLETransport(@NonNull Context context,
                         @NonNull String serviceName,
@@ -85,20 +93,28 @@ public class BLETransport extends Transport implements BLETransportCallback {
         super(serviceName, callback);
 
         serviceUUID = generateUUIDFromString(serviceName);
+        dataCharacteristic.addDescriptor(new BluetoothGattDescriptor(CLIENT_CHARACTERISTIC_CONFIG,
+                BluetoothGattDescriptor.PERMISSION_WRITE |
+                        BluetoothGattDescriptor.PERMISSION_READ));
+        initBtAdaper(context);
 
-        dataCharacteristic.addDescriptor(new BluetoothGattDescriptor(BLECentral.CLIENT_CHARACTERISTIC_CONFIG,
-                                                                     BluetoothGattDescriptor.PERMISSION_WRITE |
-                                                                             BluetoothGattDescriptor.PERMISSION_READ));
+        //abstract Gatt side from central class
+        gattClients = new BLEGattClients(context, serviceUUID);
+        gattClients.setTransportCallback(this);
+        gattClients.requestNotifyOnCharacteristic(dataCharacteristic);
 
-        central = new BLECentral(context, serviceUUID);
-        central.setTransportCallback(this);
-        central.requestNotifyOnCharacteristic(dataCharacteristic);
+        gattServer = new BLEGattServer(context,serviceUUID);
+        gattServer.setTransportCallback(this);
+        gattServer.addCharacteristic(dataCharacteristic);
+        gattServer.setServerCallback(gattClients);
+
+        central = new BLECentral(btAdapter, serviceUUID);
+        central.setCentralCallback(gattClients);
 
         if (isLollipop()) {
-            peripheral = new BLEPeripheral(context, serviceUUID);
-            peripheral.setTransportCallback(this);
-            peripheral.addCharacteristic(dataCharacteristic);
+            peripheral = new BLEPeripheral(btAdapter, serviceUUID);
         }
+
     }
 
     private UUID generateUUIDFromString(String input) {
@@ -108,9 +124,9 @@ public class BLETransport extends Transport implements BLETransportCallback {
         uuid.insert(0, hexString.substring(0, 32));
 
         uuid.insert(8, '-');
-        uuid.insert(13,'-');
-        uuid.insert(18,'-');
-        uuid.insert(23,'-');
+        uuid.insert(13, '-');
+        uuid.insert(18, '-');
+        uuid.insert(23, '-');
         Timber.d("Using UUID %s for string %s", uuid.toString(), input);
         return UUID.fromString(uuid.toString());
     }
@@ -139,26 +155,49 @@ public class BLETransport extends Transport implements BLETransportCallback {
 
         queueOutgoingData(data, identifier);
 
-        if (isConnectedTo(identifier))
+        if (gattClients.isConnectedTo(identifier))
             return transmitOutgoingDataForConnectedPeer(identifier);
 
         return false;
     }
 
+
+    /**
+     * there are three actions: advertise, scan, and open GattServer.
+     * GattServer can either be used in Central or Peripheral,
+     * So, the definition and action of GattServer should be independent of BLEPeripheral class.
+     * therefore, we add new function called start;
+     * which also begin advertise and scan, and start and setup GattServer.
+     */
+    @Override
+    public void start() {
+        openGattServer();
+        advertise();
+        scanForPeers();
+    }
+
     @Override
     public void advertise() {
+        openGattServer();
         if (isLollipop() && !peripheral.isAdvertising()) peripheral.start();
     }
 
     @Override
     public void scanForPeers() {
+        openGattServer();
         if (!central.isScanning()) central.start();
+    }
+
+    private void openGattServer() {
+        gattServer.openServer();
     }
 
     @Override
     public void stop() {
         if (isLollipop() && peripheral.isAdvertising()) peripheral.stop();
-        if (central.isScanning())       central.stop();
+        if (central.isScanning()) central.stop();
+        gattClients.disconnect();
+        gattServer.closeServer();
     }
 
     @Override
@@ -167,20 +206,8 @@ public class BLETransport extends Transport implements BLETransportCallback {
     }
 
 
-    public int getLongWriteBytes(){
+    public int getLongWriteBytes() {
         return DEFAULT_LONG_WRITE_BYTES;
-    }
-
-    /**
-     * due to sone devices don't support transport over 20 byes,
-     * mtu in BLE is temporarily deprecated.
-     * instead use {@link #getLongWriteBytes()}
-     */
-    @Deprecated
-    @Override
-    public int getMtuForIdentifier(String identifier) {
-        Integer mtu = central.getMtuForIdentifier(identifier);
-        return (mtu == null ? DEFAULT_MTU_BYTES : mtu ) - 10;
     }
 
     // </editor-fold desc="Transport">
@@ -210,13 +237,14 @@ public class BLETransport extends Transport implements BLETransportCallback {
         Timber.d("%s status: %s", identifier, status.toString());
         if (callback.get() != null) {
 
-                callback.get().identifierUpdated(this,
-                                                 identifier,
-                                                 status,
-                                                 deviceType == DeviceType.CENTRAL,  // If the central reported connection, the remote peer is the host
-                                                 extraInfo);
+            callback.get().identifierUpdated(this,
+                    identifier,
+                    status,
+                    deviceType == DeviceType.GATT,  // If the central reported connection, the remote peer is the host
+                    extraInfo);
         }
 
+        //TODO: does it needed?
         if (status == ConnectionStatus.CONNECTED)
             transmitOutgoingDataForConnectedPeer(identifier);
     }
@@ -258,11 +286,8 @@ public class BLETransport extends Transport implements BLETransportCallback {
         boolean didSendAll = true;
         while ((toSend = outBuffers.get(identifier).peek()) != null) {
             boolean didSend = false;
-            if (central.isConnectedTo(identifier)) {
-                didSend = central.write(toSend, dataCharacteristic.getUuid(), identifier);
-            }
-            else if (isLollipop() && peripheral.isConnectedTo(identifier)) {
-                didSend = peripheral.indicate(toSend, dataCharacteristic.getUuid(), identifier);
+            if (gattClients.isConnectedTo(identifier)) {
+                didSend = gattClients.write(toSend, dataCharacteristic.getUuid(), identifier);
             }
 
             if (didSend) {
@@ -279,11 +304,24 @@ public class BLETransport extends Transport implements BLETransportCallback {
         return didSendAll;
     }
 
-    private boolean isConnectedTo(String identifier) {
-        return central.isConnectedTo(identifier) || (isLollipop() && peripheral.isConnectedTo(identifier));
-    }
-
     private static boolean isLollipop() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    private void initBtAdaper(Context context) {
+        // BLE check
+        if (!BLEUtil.isBLESupported(context)) {
+            Toast.makeText(context, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // BT check
+        BluetoothManager manager = BLEUtil.getManager(context);
+        if (manager != null) {
+            btAdapter = manager.getAdapter();
+        }
+        if (btAdapter == null) {
+            Toast.makeText(context, R.string.bt_unavailable, Toast.LENGTH_SHORT).show();
+        }
     }
 }

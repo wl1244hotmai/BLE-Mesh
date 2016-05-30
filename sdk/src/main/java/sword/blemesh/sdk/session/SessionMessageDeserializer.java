@@ -325,11 +325,11 @@ public class SessionMessageDeserializer {
             // Prepare for next incoming message
             bufferOffset += (getPrefixAndHeaderLengthBytes() + bodyLength); // The next message begins at this offset. We can't simply use dataBytesProcessed because this message may have been processed over prior calls to this method
             Timber.d("Message complete. Buffer offset %d, dataBytes processed %d", bufferOffset, dataBytesProcessed);
-            reset(false);
-            if (dataBytesProcessed < bytesJustReceived) {
-                Timber.d("%d / %d bytes deserialized in complete msg. Proceeding to next msg", dataBytesProcessed, bytesJustReceived);
-                processData(bytesJustReceived - dataBytesProcessed);
+            if (dataBytesProcessed < dataBytesReceived) {
+                Timber.d("%d / %d bytes deserialized in complete msg. Proceeding to next msg", dataBytesProcessed, dataBytesReceived);
+                processData(dataBytesReceived - dataBytesProcessed);
             }
+            reset(false);
         }
     }
 

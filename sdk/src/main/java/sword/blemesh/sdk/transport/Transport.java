@@ -61,6 +61,8 @@ public abstract class Transport implements Comparable<Transport> {
 
     public abstract boolean sendData(byte[] data, String identifier);
 
+    public abstract void start();
+
     public abstract void advertise();
 
     public abstract void scanForPeers();
@@ -78,20 +80,9 @@ public abstract class Transport implements Comparable<Transport> {
 
     public abstract int getLongWriteBytes();
 
-    /**
-     * @return the Maximum Transmission Unit, in bytes, or 0 if unlimited.
-     *
-     *
-     * due to sone devices don't support transport over 20 byes,
-     * mtu in BLE is temporarily deprecated.
-     * instead use {@link #getLongWriteBytes()} for BLE.
-     */
-    public abstract int getMtuForIdentifier(String identifier);
-
-    @Deprecated
     @Override
-    public int compareTo (@NonNull Transport another) {
-        return getMtuForIdentifier("") - another.getMtuForIdentifier("");
+    public int compareTo(@NonNull Transport another) {
+        return getLongWriteBytes() - another.getLongWriteBytes();
     }
 
     @Override
