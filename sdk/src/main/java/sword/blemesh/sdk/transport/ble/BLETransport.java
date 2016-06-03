@@ -161,7 +161,6 @@ public class BLETransport extends Transport implements BLETransportCallback {
         return false;
     }
 
-
     /**
      * there are three actions: advertise, scan, and open GattServer.
      * GattServer can either be used in Central or Peripheral,
