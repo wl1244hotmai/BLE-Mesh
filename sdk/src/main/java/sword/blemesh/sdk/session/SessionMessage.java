@@ -45,13 +45,13 @@ public abstract class SessionMessage {
     public static final String HEADER_BODY_LENGTH  = "body-length";
     public static final String HEADER_ID           = "id";
 
-    protected int                              version;
+    protected          int                     version;
     protected @NonNull String                  type;
-    protected int                              bodyLengthBytes;
+    protected          int                     bodyLengthBytes;
     protected @NonNull String                  id;
     protected @NonNull Status                  status;
-    protected @NonNull Map<String, Object>     headers;
-    private   @NonNull byte[]                  serializedHeaders;
+    protected          Map<String, Object>     headers;
+    private            byte[]                  serializedHeaders;
 
     /**
      * Construct a SessionMessage with a given id.

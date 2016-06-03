@@ -159,32 +159,10 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
             addOutgoingTransfer(new OutgoingTransfer(data, recipient, sessionManager));
         }
 
-        /**
-         * Request a higher-bandwidth transport be established with the remote peer.
-         * Notification of the result of this call is reported by
-         * {@link BleMeshService.Callback#onPeerTransportUpdated(BleMeshService.ServiceBinder binder, sword.blemesh.sdk.session.Peer, int, Exception)}
-         *
-         * When an upgraded transport is established,
-         * it may require the base transport, currently {@link sword.blemesh.sdk.transport.ble.BLETransport},
-         * be suspended to prevent interference.
-         */
-        public void requestTransportUpgrade(Peer remotePeer) {
-            sessionManager.requestTransportUpgrade(remotePeer);
-        }
-
-        /**
-         * Stops supplementary transports and returns to exclusive use of the base transport.
-         * Currently this is {@link sword.blemesh.sdk.transport.ble.BLETransport}
-         */
-        public void downgradeTransport() {
-            sessionManager.downgradeTransport();
-        }
-
         /** Get the current preferred available transport for the given peer
          *  This is generally the available transport with the highest bandwidth
          *
-         *  @return either {@link sword.blemesh.sdk.transport.wifi.WifiTransport#TRANSPORT_CODE}
-         *                 or {@link sword.blemesh.sdk.transport.ble.BLETransport#TRANSPORT_CODE},
+         *  @return either {@link sword.blemesh.sdk.transport.ble.BLETransport#TRANSPORT_CODE},
          *                 or -1 if none available.
          */
         public int getTransportCodeForPeer(Peer remotePeer) {
@@ -296,7 +274,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     // <editor-fold desc="SessionManagerCallback">
 
     @Override
-    public void peerStatusUpdated(final Peer peer, final Transport.ConnectionStatus newStatus, final boolean isHost) {
+    public void peerStatusUpdated(@NonNull final Peer peer,@NonNull final Transport.ConnectionStatus newStatus, final boolean isHost) {
 
         foregroundHandler.post(new Runnable() {
             @Override
@@ -369,20 +347,13 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
             foregroundHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (callback != null) callback.onDataSent(binder, outgoingTransfer.getBodyBytes(), recipient, null);
+                    if (callback != null) {
+                        assert outgoingTransfer != null;
+                        callback.onDataSent(binder, outgoingTransfer.getBodyBytes(), recipient, null);
+                    }
                 }
             });
         }
-    }
-
-    @Override
-    public void peerTransportUpdated(@NonNull final Peer peer, final int newTransportCode, @Nullable final Exception exception) {
-        foregroundHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (callback != null) callback.onPeerTransportUpdated(binder, peer, newTransportCode, exception);
-            }
-        });
     }
 
     // </editor-fold desc="SessionManagerCallback">
