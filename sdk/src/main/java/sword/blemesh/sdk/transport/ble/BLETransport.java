@@ -233,7 +233,7 @@ public class BLETransport extends Transport implements BLETransportCallback {
                                   ConnectionStatus status,
                                   Map<String, Object> extraInfo) {
 
-        Timber.d("%s status: %s", identifier, status.toString());
+        Timber.d("identifierUpdated: %s status: %s", identifier, status.toString());
         if (callback.get() != null) {
 
             callback.get().identifierUpdated(this,

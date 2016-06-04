@@ -19,8 +19,12 @@ public class IdentityMessage extends SessionMessage {
 
     /** Header keys */
     public static final String HEADER_TRANSPORTS  = "transports";
-    public static final String HEADER_PUBKEY      = "pubkey";
     public static final String HEADER_ALIAS       = "alias";
+    public static final String HEADER_IDENTIFIER  = "identifier";
+
+    //TODO: decide whether to delete encryption.
+    public static final String HEADER_PUBKEY      = "pubkey";
+    public static final String BODY_RSSI = "rssi";
 
     private Peer peer;
 
@@ -32,6 +36,7 @@ public class IdentityMessage extends SessionMessage {
 
         Peer peer = new Peer(Base64.decode((String) headers.get(HEADER_PUBKEY), Base64.DEFAULT),
                              (String) headers.get(HEADER_ALIAS),
+                             (String) headers.get(HEADER_IDENTIFIER),
                              new Date(),
                              -1,
                              transports);
@@ -72,8 +77,9 @@ public class IdentityMessage extends SessionMessage {
         HashMap<String, Object> headerMap = super.populateHeaders();
 
         headerMap.put(HEADER_ALIAS, peer.getAlias());
-        headerMap.put(HEADER_PUBKEY, Base64.encodeToString(peer.getPublicKey(), Base64.DEFAULT));
+        headerMap.put(HEADER_IDENTIFIER, peer.getIdentifier());
         headerMap.put(HEADER_TRANSPORTS, peer.getTransports());
+        headerMap.put(HEADER_PUBKEY, Base64.encodeToString(peer.getPublicKey(), Base64.DEFAULT));
 
         return headerMap;
     }

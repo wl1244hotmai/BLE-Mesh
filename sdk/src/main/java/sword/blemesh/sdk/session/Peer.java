@@ -11,18 +11,21 @@ public class Peer {
 
     private byte[] publicKey;
     private String alias;
+    private String identifier;
     private Date lastSeen;
     private int rssi;
     protected int transports;
 
     public Peer(byte[] publicKey,
                    String alias,
+                   String identifier,
                    Date lastSeen,
                    int rssi,
                    int transports) {
 
         this.publicKey = publicKey;
         this.alias = alias;
+        this.identifier = identifier;
         this.lastSeen = lastSeen;
         this.rssi = rssi;
         this.transports = transports;
@@ -35,6 +38,8 @@ public class Peer {
     public String getAlias() {
         return alias;
     }
+
+    public String getIdentifier() {return identifier;}
 
     public Date getLastSeen() {
         return lastSeen;

@@ -63,6 +63,9 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     private SessionManager sessionManager;
     private Callback callback;
     private boolean activityRecevingMessages;
+
+    //TODO: （不确定）考虑删除inPeerTransfers、incomingMessageListeners，因为已经收到的信息不需要对信息的这次传输有什么管理；
+    //TODO: （不确定）考虑修改outPeerTransfers、messageDeliveryListeners,向外发出的消息可能需要管理，查看其是否发送成功，但是此处outPeerTransfers等变量的维护存在问题；
     private BiMap<Peer, ArrayDeque<OutgoingTransfer>> outPeerTransfers = HashBiMap.create();
     private BiMap<Peer, ArrayDeque<IncomingTransfer>> inPeerTransfers = HashBiMap.create();
     private Set<IncomingMessageListener> incomingMessageListeners = new HashSet<>();

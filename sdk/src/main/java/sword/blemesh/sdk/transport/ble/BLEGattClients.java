@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -225,25 +226,12 @@ public class BLEGattClients implements BLECentral.CentralCallback, BLEGattServer
                                           int status) {
 
                 Timber.d("onDescriptorWrite");
-                if (status == BluetoothGatt.GATT_SUCCESS && transportCallback != null) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
 
                     if (Arrays.equals(descriptor.getValue(), BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)) {
-
-                        //Get device type of remote
-                        BLETransportCallback.DeviceType mDeviceType = null;
-                        if (centralScannedDevices.contains(gatt.getDevice().getAddress())) {
-                            mDeviceType = BLETransportCallback.DeviceType.GATT;
-                        } else if (peripheralReceivedDevices.contains(gatt.getDevice().getAddress())) {
-                            //TODO: Peripheral's connection report can put to GattServer to realize it。
-                            mDeviceType = BLETransportCallback.DeviceType.GATT_SERVER;
-                        }
-                        assert (mDeviceType != null);
-
-                        transportCallback.identifierUpdated(mDeviceType,
-                                gatt.getDevice().getAddress(),
-                                Transport.ConnectionStatus.CONNECTED,
-                                null);
-
+                        Timber.d("enabled indications successfully.");
+                        boolean beginReadRssi = gatt.readRemoteRssi();
+                        Timber.d("Start read Rssi of remote revice %b", beginReadRssi);
 
                     } else if (Arrays.equals(descriptor.getValue(), BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
                         Timber.d("disabled indications successfully. Closing gatt");
@@ -286,8 +274,28 @@ public class BLEGattClients implements BLECentral.CentralCallback, BLEGattServer
 
             @Override
             public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-                Timber.d(String.format("%s rssi: %d", gatt.getDevice().getAddress(), rssi));
-                super.onReadRemoteRssi(gatt, rssi, status);
+                if(status == BluetoothGatt.GATT_SUCCESS  && transportCallback != null){
+                    Timber.d("%s rssi: %d", gatt.getDevice().getAddress(), rssi);
+                    super.onReadRemoteRssi(gatt, rssi, status);
+
+                    //Get device type of remote
+                    BLETransportCallback.DeviceType mDeviceType = null;
+                    if (centralScannedDevices.contains(gatt.getDevice().getAddress())) {
+                        mDeviceType = BLETransportCallback.DeviceType.GATT;
+                    } else if (peripheralReceivedDevices.contains(gatt.getDevice().getAddress())) {
+                        //TODO: Peripheral's connection report can put to GattServer to realize it。
+                        mDeviceType = BLETransportCallback.DeviceType.GATT_SERVER;
+                    }
+                    assert (mDeviceType != null);
+
+                    Map<String, Object> extraInfo = new HashMap<>();
+                    extraInfo.put("rssi", rssi);
+                    transportCallback.identifierUpdated(mDeviceType,
+                            gatt.getDevice().getAddress(),
+                            Transport.ConnectionStatus.CONNECTED,
+                            extraInfo);
+                }
+
             }
 
         };
@@ -329,6 +337,11 @@ public class BLEGattClients implements BLECentral.CentralCallback, BLEGattServer
         return false;
     }
 
+    public boolean readRssi(String deviceAddress){
+        BluetoothGatt remote = connectedDevices.get(deviceAddress);
+        Timber.d("readRssi from %s", remote.getDevice().getAddress());
+        return remote.readRemoteRssi();
+    }
 
     public void disconnect() {
         synchronized (connectedDevices) {

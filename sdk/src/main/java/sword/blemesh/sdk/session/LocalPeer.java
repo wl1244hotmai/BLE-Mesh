@@ -18,8 +18,13 @@ public class LocalPeer extends Peer {
                      KeyPair keyPair,
                      String alias) {
 
-        super(keyPair.publicKey, alias, null, 0, 0);
+        super(keyPair.publicKey, alias, getMacAddress(context), null, 0, 0);
+
         this.privateKey = keyPair.secretKey;
+    }
+
+    private static String getMacAddress(Context context) {
+        return android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
     }
 
     private static boolean doesDeviceSupportWifiDirect(Context ctx) {
