@@ -1,6 +1,6 @@
 package sword.blemesh.sdk.app;
 
-import sword.blemesh.sdk.session.Peer;
+import sword.blemesh.sdk.mesh_graph.Peer;
 import sword.blemesh.sdk.session.SessionMessage;
 
 /**

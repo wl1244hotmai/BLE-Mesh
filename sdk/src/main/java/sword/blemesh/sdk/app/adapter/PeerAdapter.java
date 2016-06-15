@@ -11,7 +11,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import sword.blemesh.sdk.R;
-import sword.blemesh.sdk.session.Peer;
+import sword.blemesh.sdk.mesh_graph.Peer;
 
 
 /**

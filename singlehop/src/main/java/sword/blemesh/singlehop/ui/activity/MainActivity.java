@@ -24,7 +24,7 @@ import sword.blemesh.singlehop.PrefsManager;
 import sword.blemesh.singlehop.R;
 import sword.blemesh.singlehop.ui.fragment.QuoteWritingFragment;
 import sword.blemesh.singlehop.ui.fragment.WelcomeFragment;
-import sword.blemesh.sdk.session.Peer;
+import sword.blemesh.sdk.mesh_graph.Peer;
 import timber.log.Timber;
 
 /**

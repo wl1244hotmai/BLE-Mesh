@@ -1,11 +1,10 @@
-package sword.blemesh.sdk.session;
+package sword.blemesh.sdk.mesh_graph;
 
 import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 
 import sword.blemesh.sdk.crypto.KeyPair;
-import timber.log.Timber;
 
 /**
  * Created by davidbrodsky on 2/21/15.

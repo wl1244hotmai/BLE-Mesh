@@ -18,7 +18,7 @@ import android.support.v4.app.Fragment;
 import android.widget.TextView;
 
 import sword.blemesh.sdk.app.BleMeshService;
-import sword.blemesh.sdk.session.LocalPeer;
+import sword.blemesh.sdk.mesh_graph.LocalPeer;
 import sword.blemesh.sdk.transport.ble.BLEUtil;
 import timber.log.Timber;
 

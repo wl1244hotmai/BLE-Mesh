@@ -1,8 +1,10 @@
 package sword.blemesh.sdk.session;
 
+import sword.blemesh.sdk.mesh_graph.Peer;
+
 /**
  * An item that schedules {@link sword.blemesh.sdk.session.SessionMessage}s for delivery
- * to a {@link sword.blemesh.sdk.session.Peer}
+ * to a {@link Peer}
  *
  * Created by davidbrodsky on 3/14/15.
  */

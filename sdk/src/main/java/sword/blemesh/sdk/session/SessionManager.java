@@ -18,6 +18,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import hugo.weaving.DebugLog;
+import sword.blemesh.sdk.mesh_graph.LocalPeer;
+import sword.blemesh.sdk.mesh_graph.Peer;
 import sword.blemesh.sdk.transport.Transport;
 import sword.blemesh.sdk.transport.TransportState;
 import sword.blemesh.sdk.transport.ble.BLETransport;
@@ -34,9 +36,9 @@ public class SessionManager implements Transport.TransportCallback,
 
     public interface SessionManagerCallback {
 
-        void peerStatusUpdated(@NonNull Peer peer,
-                               @NonNull Transport.ConnectionStatus newStatus,
-                               boolean isHost);
+        void directPeerStatusUpdated(@NonNull Peer peer,
+                                     @NonNull Transport.ConnectionStatus newStatus,
+                                     boolean isHost);
 
         void messageReceivingFromPeer(@NonNull SessionMessage message,
                                       @NonNull Peer recipient,
@@ -58,13 +60,14 @@ public class SessionManager implements Transport.TransportCallback,
     private Context                                   context;
     private String                                    serviceName;
     private SortedSet<Transport>                      transports;
-    private LocalPeer                                 localPeer;
+    private LocalPeer localPeer;
     private IdentityMessage                           localIdentityMessage;
     private SessionManagerCallback                    callback;
     private HashMap<String, Transport>                identifierTransports       = new HashMap<>();
     private HashMap<Peer, SortedSet<Transport>>       peerTransports             = new HashMap<>();
     private BiMap<String, SessionMessageDeserializer> identifierReceivers        = HashBiMap.create();
     private BiMap<String, SessionMessageSerializer>   identifierSenders          = HashBiMap.create();
+    private HashMap<String, Integer>                  identifierRssis             = new HashMap<>();
     private final HashMap<String, Peer>               identifiedPeers            = new HashMap<>();
     private final SetMultimap<Peer, String>           peerIdentifiers            = HashMultimap.create();
     private Set<String>                               identifyingPeers           = new HashSet<>();
@@ -322,7 +325,7 @@ public class SessionManager implements Transport.TransportCallback,
 
                         if (peerIdentifiers.get(recipient).size() == 1) {
                             Timber.d("Reporting peer connected after last id sent");
-                            callback.peerStatusUpdated(recipient,
+                            callback.directPeerStatusUpdated(recipient,
                                                        Transport.ConnectionStatus.CONNECTED,
                                                        hostIdentifiers.contains(identifier));
                         }
@@ -361,6 +364,11 @@ public class SessionManager implements Transport.TransportCallback,
             case CONNECTED:
                 Timber.d("Connected to %s", identifier);
                 if (peerIsHost) hostIdentifiers.add(identifier);
+
+                if(extraInfo!=null){
+                    int remoteRssi = (Integer)extraInfo.get("rssi");
+                    identifierRssis.put(identifier,remoteRssi);
+                }
 
                 // Only one peer (client) needs to initiate identification
                 if (peerIsHost && shouldIdentifyPeer(identifier)) {
@@ -415,7 +423,7 @@ public class SessionManager implements Transport.TransportCallback,
                     if (identifiers.size() == 0) {
                         Timber.d("Disconnected from %s", peer.getAlias());
 
-                        callback.peerStatusUpdated(identifiedPeers.get(identifier),
+                        callback.directPeerStatusUpdated(identifiedPeers.get(identifier),
                                 Transport.ConnectionStatus.DISCONNECTED,
                                 peerIsHost);
 
@@ -429,6 +437,7 @@ public class SessionManager implements Transport.TransportCallback,
                 identifiedPeers.remove(identifier);
                 identifierSenders.remove(identifier);
                 identifierReceivers.remove(identifier);
+                identifierRssis.remove(identifier);
                 break;
         }
     }
@@ -468,7 +477,9 @@ public class SessionManager implements Transport.TransportCallback,
 
             if (message instanceof IdentityMessage) {
 
+                //set the rssi for direct remote device.
                 Peer peer = ((IdentityMessage) message).getPeer();
+                peer.setRssi(identifierRssis.get(senderIdentifier));
 
                 peerIdentifiers.put(peer, senderIdentifier);
 
@@ -490,7 +501,7 @@ public class SessionManager implements Transport.TransportCallback,
                     if (!sentIdentityToSender)
                         sendMessage(localIdentityMessage, peer); // Report peer connected after identity send ack'd
                     else if (peerIdentifiers.get(peer).size() == 1) // If peer is already connected via another transport, don't re-notify
-                        callback.peerStatusUpdated(peer, Transport.ConnectionStatus.CONNECTED, hostIdentifiers.contains(senderIdentifier));
+                        callback.directPeerStatusUpdated(peer, Transport.ConnectionStatus.CONNECTED, hostIdentifiers.contains(senderIdentifier));
                 }
 
             } else if (identifiedPeers.containsKey(senderIdentifier)) {

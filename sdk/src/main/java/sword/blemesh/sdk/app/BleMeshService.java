@@ -22,9 +22,11 @@ import java.util.Set;
 
 import sword.blemesh.sdk.crypto.KeyPair;
 import sword.blemesh.sdk.crypto.SodiumShaker;
+import sword.blemesh.sdk.mesh_graph.LocalGraph;
+import sword.blemesh.sdk.mesh_graph.PeersGraph;
 import sword.blemesh.sdk.session.DataTransferMessage;
-import sword.blemesh.sdk.session.LocalPeer;
-import sword.blemesh.sdk.session.Peer;
+import sword.blemesh.sdk.mesh_graph.LocalPeer;
+import sword.blemesh.sdk.mesh_graph.Peer;
 import sword.blemesh.sdk.session.SessionManager;
 import sword.blemesh.sdk.session.SessionMessage;
 import sword.blemesh.sdk.transport.Transport;
@@ -78,6 +80,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     private Handler foregroundHandler;
 
     private LocalPeer localPeer;
+    private LocalGraph mPeersGraph;
 
     /** Handler Messages */
     public static final int ADVERTISE     = 0;
@@ -104,6 +107,8 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     @Override
     public void onDestroy() {
         Timber.d("Service destroyed");
+        //TODO: 是否需要删除mPeersGraph?
+        mPeersGraph = null;
         sessionManager.stop();
         backgroundLooper.quit();
     }
@@ -132,7 +137,8 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         public void registerLocalUserWithService(String userAlias, String serviceName) {
             KeyPair keyPair = SodiumShaker.generateKeyPair();
             localPeer = new LocalPeer(getApplicationContext(), keyPair, userAlias);
-
+            //initialize graph using local peer.
+            mPeersGraph = new LocalGraph(localPeer);
             if (sessionManager != null) sessionManager.stop();
 
             sessionManager = new SessionManager(BleMeshService.this, serviceName, localPeer, BleMeshService.this);
@@ -277,7 +283,18 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     // <editor-fold desc="SessionManagerCallback">
 
     @Override
-    public void peerStatusUpdated(@NonNull final Peer peer,@NonNull final Transport.ConnectionStatus newStatus, final boolean isHost) {
+    public void directPeerStatusUpdated(@NonNull final Peer peer, @NonNull final Transport.ConnectionStatus newStatus, final boolean isHost) {
+        //更新单跳的新用户
+        switch (newStatus) {
+            case CONNECTED:
+                mPeersGraph.newDirectRemote(peer);
+                break;
+
+            case DISCONNECTED:
+
+                break;
+        }
+
 
         foregroundHandler.post(new Runnable() {
             @Override

@@ -9,8 +9,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import sword.blemesh.sdk.mesh_graph.Peer;
+
 /**
- * Representation of network identity. Closely related to {@link sword.blemesh.sdk.session.Peer}
+ * Representation of network identity. Closely related to {@link Peer}
  * Created by davidbrodsky on 2/22/15.
  */
 public class IdentityMessage extends SessionMessage {
@@ -20,7 +22,8 @@ public class IdentityMessage extends SessionMessage {
     /** Header keys */
     public static final String HEADER_TRANSPORTS  = "transports";
     public static final String HEADER_ALIAS       = "alias";
-    public static final String HEADER_IDENTIFIER  = "identifier";
+    public static final String HEADER_MAC_ADDRESS  = "mac_address";
+
 
     //TODO: decide whether to delete encryption.
     public static final String HEADER_PUBKEY      = "pubkey";
@@ -36,7 +39,7 @@ public class IdentityMessage extends SessionMessage {
 
         Peer peer = new Peer(Base64.decode((String) headers.get(HEADER_PUBKEY), Base64.DEFAULT),
                              (String) headers.get(HEADER_ALIAS),
-                             (String) headers.get(HEADER_IDENTIFIER),
+                             (String) headers.get(HEADER_MAC_ADDRESS),
                              new Date(),
                              -1,
                              transports);
@@ -77,7 +80,7 @@ public class IdentityMessage extends SessionMessage {
         HashMap<String, Object> headerMap = super.populateHeaders();
 
         headerMap.put(HEADER_ALIAS, peer.getAlias());
-        headerMap.put(HEADER_IDENTIFIER, peer.getIdentifier());
+        headerMap.put(HEADER_MAC_ADDRESS, peer.getMacAddress());
         headerMap.put(HEADER_TRANSPORTS, peer.getTransports());
         headerMap.put(HEADER_PUBKEY, Base64.encodeToString(peer.getPublicKey(), Base64.DEFAULT));
 

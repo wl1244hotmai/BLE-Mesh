@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import sword.blemesh.sdk.R;
 import sword.blemesh.sdk.app.BleMeshService;
 import sword.blemesh.sdk.app.adapter.PeerAdapter;
-import sword.blemesh.sdk.session.Peer;
+import sword.blemesh.sdk.mesh_graph.Peer;
 import sword.blemesh.sdk.transport.Transport;
 
 /**
@@ -75,7 +75,7 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
 
         /**
          * The user selected recipient to receive data. Provide that data in a call
-         * to {@link #sendDataToPeer(byte[], sword.blemesh.sdk.session.Peer)}
+         * to {@link #sendDataToPeer(byte[], Peer)}
          * Called when mode is {@link Mode#BOTH}
          */
         void onDataRequestedForPeer(@NonNull PeerFragment fragment,

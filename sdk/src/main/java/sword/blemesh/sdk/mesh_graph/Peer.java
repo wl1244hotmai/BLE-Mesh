@@ -1,4 +1,4 @@
-package sword.blemesh.sdk.session;
+package sword.blemesh.sdk.mesh_graph;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -11,21 +11,21 @@ public class Peer {
 
     private byte[] publicKey;
     private String alias;
-    private String identifier;
+    private String MacAddress;
     private Date lastSeen;
     private int rssi;
     protected int transports;
 
     public Peer(byte[] publicKey,
                    String alias,
-                   String identifier,
+                   String MacAddress,
                    Date lastSeen,
                    int rssi,
                    int transports) {
 
         this.publicKey = publicKey;
         this.alias = alias;
-        this.identifier = identifier;
+        this.MacAddress = MacAddress;
         this.lastSeen = lastSeen;
         this.rssi = rssi;
         this.transports = transports;
@@ -39,7 +39,7 @@ public class Peer {
         return alias;
     }
 
-    public String getIdentifier() {return identifier;}
+    public String getMacAddress() {return MacAddress;}
 
     public Date getLastSeen() {
         return lastSeen;
@@ -47,6 +47,14 @@ public class Peer {
 
     public int getRssi() {
         return rssi;
+    }
+
+    /**
+     * To directed devices, use this method to set the RSSI of it.
+     * @param rssi indicates the Signal Strength of remote device to local.
+     */
+    public void setRssi (int rssi){
+        this.rssi = rssi;
     }
 
     public int getTransports() {

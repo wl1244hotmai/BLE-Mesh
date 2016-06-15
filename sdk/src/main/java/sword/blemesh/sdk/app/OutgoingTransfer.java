@@ -1,7 +1,7 @@
 package sword.blemesh.sdk.app;
 
 import sword.blemesh.sdk.session.DataTransferMessage;
-import sword.blemesh.sdk.session.Peer;
+import sword.blemesh.sdk.mesh_graph.Peer;
 import sword.blemesh.sdk.session.SessionMessage;
 import sword.blemesh.sdk.session.SessionMessageScheduler;
 
