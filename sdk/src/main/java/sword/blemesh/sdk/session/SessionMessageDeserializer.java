@@ -315,6 +315,9 @@ public class SessionMessageDeserializer {
                 if (sessionMessage instanceof DataTransferMessage) {
                     ((DataTransferMessage) sessionMessage).setBody(body);
                 }
+                if (sessionMessage instanceof GraphMessage){
+                    ((GraphMessage) sessionMessage).setDataBody(body);
+                }
                 dataBytesProcessed += bodyLength;
             }
 
@@ -384,6 +387,9 @@ public class SessionMessageDeserializer {
 
             case DataTransferMessage.HEADER_TYPE:
                 return new DataTransferMessage(headers, null);
+
+            case GraphMessage.HEADER_TYPE:
+                return new GraphMessage(headers, null);
 
             default:
                 Timber.w("Unable to deserialize %s message", headerType);

@@ -1,7 +1,6 @@
 package sword.blemesh.sdk.session;
 
 import android.content.Context;
-import android.util.Base64;
 
 import com.google.common.base.Objects;
 
@@ -22,11 +21,8 @@ public class IdentityMessage extends SessionMessage {
     /** Header keys */
     public static final String HEADER_TRANSPORTS  = "transports";
     public static final String HEADER_ALIAS       = "alias";
-    public static final String HEADER_MAC_ADDRESS  = "mac_address";
-
 
     //TODO: decide whether to delete encryption.
-    public static final String HEADER_PUBKEY      = "pubkey";
     public static final String BODY_RSSI = "rssi";
 
     private Peer peer;
@@ -37,8 +33,7 @@ public class IdentityMessage extends SessionMessage {
     public static IdentityMessage fromHeaders(Map<String, Object> headers) {
         int transports = headers.containsKey(HEADER_TRANSPORTS) ? (int) headers.get(HEADER_TRANSPORTS) : 0;
 
-        Peer peer = new Peer(Base64.decode((String) headers.get(HEADER_PUBKEY), Base64.DEFAULT),
-                             (String) headers.get(HEADER_ALIAS),
+        Peer peer = new Peer((String) headers.get(HEADER_ALIAS),
                              (String) headers.get(HEADER_MAC_ADDRESS),
                              new Date(),
                              -1,
@@ -49,7 +44,7 @@ public class IdentityMessage extends SessionMessage {
     }
 
     public IdentityMessage(String id, Peer peer) {
-        super(id);
+        super(peer.getMacAddress(),id);
         this.peer = peer;
         init();
         serializeAndCacheHeaders();
@@ -80,9 +75,7 @@ public class IdentityMessage extends SessionMessage {
         HashMap<String, Object> headerMap = super.populateHeaders();
 
         headerMap.put(HEADER_ALIAS, peer.getAlias());
-        headerMap.put(HEADER_MAC_ADDRESS, peer.getMacAddress());
         headerMap.put(HEADER_TRANSPORTS, peer.getTransports());
-        headerMap.put(HEADER_PUBKEY, Base64.encodeToString(peer.getPublicKey(), Base64.DEFAULT));
 
         return headerMap;
     }
@@ -98,8 +91,8 @@ public class IdentityMessage extends SessionMessage {
         return Objects.hashCode(headers.get(HEADER_TYPE),
                                 headers.get(HEADER_BODY_LENGTH),
                                 headers.get(HEADER_ID),
-                                headers.get(HEADER_ALIAS),
-                                headers.get(HEADER_PUBKEY));
+                                headers.get(HEADER_MAC_ADDRESS),
+                                headers.get(HEADER_ALIAS));
     }
 
     @Override
@@ -114,8 +107,8 @@ public class IdentityMessage extends SessionMessage {
 
             // If we only target API 19+, we can move to the java.util.Objects.equals
             return super.equals(obj) &&
-                    Objects.equal(getHeaders().get(HEADER_PUBKEY),
-                            other.getHeaders().get(HEADER_PUBKEY)) &&
+                    Objects.equal(getHeaders().get(HEADER_MAC_ADDRESS),
+                            other.getHeaders().get(HEADER_MAC_ADDRESS)) &&
                     Objects.equal(getHeaders().get(HEADER_ALIAS),
                             other.getHeaders().get(HEADER_ALIAS));
         }

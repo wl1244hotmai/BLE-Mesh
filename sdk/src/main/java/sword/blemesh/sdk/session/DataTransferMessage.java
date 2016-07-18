@@ -16,7 +16,7 @@ public class DataTransferMessage extends SessionMessage {
 
     public static final String HEADER_EXTRA = "extra";
 
-    private ByteBuffer data;
+    private ByteBuffer dataBuffer;
     private Map<String, Object> extraHeaders;
 
     // <editor-fold desc="Incoming Constructors">
@@ -24,7 +24,8 @@ public class DataTransferMessage extends SessionMessage {
     DataTransferMessage(@NonNull Map<String, Object> headers,
                         @Nullable byte[] body) {
 
-        super((String) headers.get(SessionMessage.HEADER_ID));
+        super((String)headers.get(SessionMessage.HEADER_MAC_ADDRESS),
+                (String) headers.get(SessionMessage.HEADER_ID));
         init();
         this.headers      = headers;
         bodyLengthBytes   = (int) headers.get(HEADER_BODY_LENGTH);
@@ -84,10 +85,10 @@ public class DataTransferMessage extends SessionMessage {
     }
 
     public void setBody(@NonNull byte[] body) {
-        if (data != null)
+        if (dataBuffer != null)
             throw new IllegalStateException("Attempted to set existing message body");
 
-        data = ByteBuffer.wrap(body);
+        dataBuffer = ByteBuffer.wrap(body);
         status = Status.COMPLETE;
     }
 
@@ -99,8 +100,8 @@ public class DataTransferMessage extends SessionMessage {
         int bytesToRead = Math.min(length, bodyLengthBytes - offset);
         byte[] result = new byte[bytesToRead];
 
-        data.position(offset);
-        data.get(result, 0, bytesToRead);
+        dataBuffer.position(offset);
+        dataBuffer.get(result, 0, bytesToRead);
 
         return result;
     }

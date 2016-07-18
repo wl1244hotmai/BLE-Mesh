@@ -1,5 +1,13 @@
 package sword.blemesh.sdk;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -41,6 +49,43 @@ public class DataUtil {
                     + Character.digit(s.charAt(i+1), 16));
         }
         return data;
+    }
+
+    /**
+     * 对象转数组
+     * @param obj
+     * @return
+     */
+    public static byte[] toByteArray(Object obj) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(obj);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bos.toByteArray();
+
+    }
+
+    /**
+     * 数组转对象
+     * @param bytes
+     * @return
+     */
+    public static Object toObject(byte[] bytes) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        ObjectInput in = null;
+        try {
+            in = new ObjectInputStream(bis);
+            return in.readObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

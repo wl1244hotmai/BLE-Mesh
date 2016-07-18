@@ -4,26 +4,25 @@ import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 
-import sword.blemesh.sdk.crypto.KeyPair;
-
 /**
  * Created by davidbrodsky on 2/21/15.
  */
 public class LocalPeer extends Peer {
 
-    byte[] privateKey;
+    private static String local_mac_address;
 
     public LocalPeer(Context context,
-                     KeyPair keyPair,
                      String alias) {
-
-        super(keyPair.publicKey, alias, getMacAddress(context), null, 0, 0);
-
-        this.privateKey = keyPair.secretKey;
+        super(alias, getLocalMacAddress(context), null, 0, 0);
     }
 
-    private static String getMacAddress(Context context) {
-        return android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+    private static String getLocalMacAddress(Context context) {
+        local_mac_address = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+        return local_mac_address;
+    }
+
+    public static String getLocalMacAddress(){
+        return local_mac_address;
     }
 
     private static boolean doesDeviceSupportWifiDirect(Context ctx) {

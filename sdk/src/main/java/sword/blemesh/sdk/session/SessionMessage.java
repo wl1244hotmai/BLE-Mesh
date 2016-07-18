@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import sword.blemesh.sdk.mesh_graph.LocalPeer;
 import timber.log.Timber;
 
 /**
@@ -44,6 +45,7 @@ public abstract class SessionMessage {
     public static final String HEADER_TYPE         = "type";
     public static final String HEADER_BODY_LENGTH  = "body-length";
     public static final String HEADER_ID           = "id";
+    public static final String HEADER_MAC_ADDRESS  = "mac_address";
 
     protected          int                     version;
     protected @NonNull String                  type;
@@ -51,6 +53,7 @@ public abstract class SessionMessage {
     protected @NonNull String                  id;
     protected @NonNull Status                  status;
     protected          Map<String, Object>     headers;
+    protected @NonNull String                  mac_address;
     private            byte[]                  serializedHeaders;
 
     /**
@@ -58,8 +61,9 @@ public abstract class SessionMessage {
      * This constructor should be used for deserialization of
      * incoming SessionMessages.
      */
-    public SessionMessage(@NonNull String id) {
+    public SessionMessage(@NonNull String src_mac_address, @NonNull String id) {
         this.id         = id;
+        this.mac_address = src_mac_address;
         type            = getClass().getSimpleName();
         bodyLengthBytes = 0;
         version         = CURRENT_HEADER_VERSION;
@@ -77,7 +81,8 @@ public abstract class SessionMessage {
      * This constructor should be used for creating new outgoing SessionMessages
      */
     public SessionMessage() {
-        this(UUID.randomUUID().toString().substring(28));
+        //TODO: LocalPeer.getLocalMacAddress()考虑改为使用Preference等方式存储，作为static方法不是很好
+        this(LocalPeer.getLocalMacAddress(),UUID.randomUUID().toString().substring(28));
     }
 
 
@@ -91,9 +96,14 @@ public abstract class SessionMessage {
         headerMap.put(HEADER_TYPE,        type);
         headerMap.put(HEADER_BODY_LENGTH, bodyLengthBytes);
         headerMap.put(HEADER_ID,          id);
+        headerMap.put(HEADER_MAC_ADDRESS, mac_address);
 
         return headerMap;
     }
+
+    public @NonNull String getID(){return id;}
+
+    public @NonNull String getMac_address(){return mac_address;}
 
     public @NonNull String getType() {
         return type;
@@ -253,7 +263,8 @@ public abstract class SessionMessage {
         // If we only target API 19+, we can move to java.util.Objects.hash
         return Objects.hashCode(headers.get(HEADER_TYPE),
                                 headers.get(HEADER_BODY_LENGTH),
-                                headers.get(HEADER_ID));
+                                headers.get(HEADER_ID),
+                                headers.get(HEADER_MAC_ADDRESS));
     }
 
     @Override
@@ -271,7 +282,9 @@ public abstract class SessionMessage {
                    Objects.equal(getHeaders().get(HEADER_BODY_LENGTH),
                                  other.getHeaders().get(HEADER_BODY_LENGTH)) &&
                    Objects.equal(getHeaders().get(HEADER_ID),
-                                 other.getHeaders().get(HEADER_ID));
+                                 other.getHeaders().get(HEADER_ID)) &&
+                   Objects.equal(getHeaders().get(HEADER_MAC_ADDRESS),
+                            other.getHeaders().get(HEADER_MAC_ADDRESS));
         }
 
         return false;

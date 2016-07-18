@@ -7,7 +7,7 @@ public class PeersEdge {
     private String src, desc;
     private int weight;
 
-    PeersEdge(String src, String desc, int rssi){
+    public PeersEdge(String src, String desc, int rssi){
         this.src = src;
         this.desc = desc;
         this.weight = rssi;

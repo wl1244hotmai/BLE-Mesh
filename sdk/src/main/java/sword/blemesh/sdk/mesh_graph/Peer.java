@@ -1,38 +1,56 @@
 package sword.blemesh.sdk.mesh_graph;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Date;
 
 /**
  * Created by davidbrodsky on 2/21/15.
  */
-public class Peer {
+public class Peer{
 
+    public static final String PEER_ALIAS = "alias";
+    public static final String PEER_MAC_ADDRESS = "mac_address";
+    public static final String PEER_LAST_SEEN = "last_seen";
+    public static final String PEER_RSSI = "rssi";
+    public static final String PEER_TRANSPORTS = "transports";
 
-    private byte[] publicKey;
     private String alias;
     private String MacAddress;
     private Date lastSeen;
     private int rssi;
+    private int hops;
     protected int transports;
 
-    public Peer(byte[] publicKey,
-                   String alias,
+    public Peer(JSONObject peerJSONObject){
+        this.alias = (String) peerJSONObject.opt(PEER_ALIAS);
+        this.MacAddress = (String) peerJSONObject.opt(PEER_MAC_ADDRESS);
+        Long timeMilliSecond = (Long)peerJSONObject.opt(PEER_LAST_SEEN);
+        if(timeMilliSecond == null){
+            this.lastSeen = null;
+        }
+        else{
+            this.lastSeen = new Date(timeMilliSecond);
+        }
+        this.rssi = (Integer) peerJSONObject.opt(PEER_RSSI);
+        this.transports = (Integer) peerJSONObject.opt(PEER_TRANSPORTS);
+        this.hops = 0;
+    }
+
+    public Peer(String alias,
                    String MacAddress,
                    Date lastSeen,
                    int rssi,
                    int transports) {
 
-        this.publicKey = publicKey;
         this.alias = alias;
         this.MacAddress = MacAddress;
         this.lastSeen = lastSeen;
         this.rssi = rssi;
         this.transports = transports;
-    }
-
-    public byte[] getPublicKey() {
-        return publicKey;
+        this.hops = 0;
     }
 
     public String getAlias() {
@@ -65,10 +83,27 @@ public class Peer {
         return (transports & transportCode) == transportCode;
     }
 
+    public void setHops(int hops){
+        this.hops = hops;
+    }
+
+    public int getHops(){
+        return this.hops;
+    }
+
+    public JSONObject toJSONObject() throws JSONException {
+        JSONObject peerJSONObject = new JSONObject();
+        peerJSONObject.put(PEER_ALIAS,alias);
+        peerJSONObject.put(PEER_MAC_ADDRESS,MacAddress);
+        peerJSONObject.put(PEER_LAST_SEEN,lastSeen==null? null:lastSeen.getTime());
+        peerJSONObject.put(PEER_RSSI,rssi);
+        peerJSONObject.put(PEER_TRANSPORTS,transports);
+        return peerJSONObject;
+    }
+
     @Override
     public String toString() {
         return "Peer{" +
-                "publicKey=" + Arrays.toString(publicKey) +
                 ", alias='" + alias + '\'' +
                 ", lastSeen=" + lastSeen +
                 ", rssi=" + rssi +
@@ -84,7 +119,7 @@ public class Peer {
         if (getClass().equals(obj.getClass()))
         {
             Peer other = (Peer) obj;
-            return Arrays.equals(publicKey, other.publicKey);
+            return MacAddress.equals(other.MacAddress);
         }
 
         return false;
@@ -92,6 +127,6 @@ public class Peer {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(publicKey);
+        return MacAddress.hashCode();
     }
 }

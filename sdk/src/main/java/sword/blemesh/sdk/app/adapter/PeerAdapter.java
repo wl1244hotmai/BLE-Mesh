@@ -9,6 +9,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 
 import sword.blemesh.sdk.R;
 import sword.blemesh.sdk.mesh_graph.Peer;
@@ -29,6 +33,7 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView textView;
         public ViewGroup container;
+
         public ViewHolder(View v) {
             super(v);
             container = (ViewGroup) v;
@@ -49,7 +54,7 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.ViewHolder> {
     // Create new views (invoked by the layout manager)
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                     int viewType) {
+                                         int viewType) {
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.peer_item, parent, false);
@@ -72,10 +77,11 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.ViewHolder> {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         Peer peer = peers.get(position);
-        holder.textView.setText(peer.getAlias() == null ?
-                                "Unnamed (key=" + Base64.encodeToString(peer.getPublicKey(),
-                                                                        Base64.DEFAULT).substring(0, 5) + "...)" :
-                                peer.getAlias());
+        String text = peer.getAlias() == null ?
+                "Unnamed device,mac: =" + peer.getMacAddress() :
+                peer.getAlias();
+        text += " hops: " + peer.getHops() + " rssi: " + peer.getRssi();
+        holder.textView.setText(text);
         holder.container.setTag(peer);
     }
 
@@ -87,14 +93,60 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.ViewHolder> {
 
     public void notifyPeerAdded(Peer peer) {
         peers.add(peer);
-        notifyItemInserted(peers.size()-1);
+        notifyItemInserted(peers.size() - 1);
+
     }
 
+    @Deprecated
     public void notifyPeerRemoved(Peer peer) {
         int idx = peers.indexOf(peer);
         if (idx != -1) {
             peers.remove(idx);
             notifyItemRemoved(idx);
         }
+    }
+
+    public void notifyPeerRemoved(int idx) {
+        if (idx != -1) {
+            notifyItemRemoved(idx);
+        }
+    }
+
+    public void notifyPeerChanged(Peer peer) {
+        int idx = peers.indexOf(peer);
+        if (idx != -1) {
+            peers.set(idx, peer);
+            notifyItemChanged(idx);
+        }
+    }
+
+    public void notifyPeersUpdated(LinkedHashMap<String, Peer> vertexes,
+                                   boolean isJoinAction) {
+        if (isJoinAction) // JOIN MESSAGE
+        {
+            for (Map.Entry e : vertexes.entrySet()) {
+                Peer peer = (Peer) e.getValue();
+                if (peers.contains(peer)) {
+                    notifyPeerChanged(peer);
+                } else {
+                    notifyPeerAdded(peer);
+                }
+            }
+        } else {  //LEFT MESSAGE
+            Iterator it = peers.iterator();
+            while(it.hasNext()){
+                Peer p = (Peer)it.next();
+                if(vertexes.containsValue(p)){
+                    notifyPeerChanged(vertexes.get(p.getMacAddress()));
+                }
+                else{
+                    it.remove();
+                    int idx = peers.indexOf(p);
+                    notifyPeerRemoved(idx);
+                }
+            }
+        }
+
+
     }
 }

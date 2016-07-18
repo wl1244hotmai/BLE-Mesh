@@ -18,15 +18,15 @@ import com.google.common.collect.HashBiMap;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
-import sword.blemesh.sdk.crypto.KeyPair;
-import sword.blemesh.sdk.crypto.SodiumShaker;
 import sword.blemesh.sdk.mesh_graph.LocalGraph;
 import sword.blemesh.sdk.mesh_graph.PeersGraph;
 import sword.blemesh.sdk.session.DataTransferMessage;
 import sword.blemesh.sdk.mesh_graph.LocalPeer;
 import sword.blemesh.sdk.mesh_graph.Peer;
+import sword.blemesh.sdk.session.GraphMessage;
 import sword.blemesh.sdk.session.SessionManager;
 import sword.blemesh.sdk.session.SessionMessage;
 import sword.blemesh.sdk.transport.Transport;
@@ -36,7 +36,7 @@ import timber.log.Timber;
  * Created by davidbrodsky on 11/4/14.
  */
 public class BleMeshService extends Service implements ActivityRecevingMessagesIndicator,
-                                                        SessionManager.SessionManagerCallback {
+        SessionManager.SessionManagerCallback {
 
     public interface Callback {
 
@@ -55,10 +55,9 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                                  @NonNull Transport.ConnectionStatus newStatus,
                                  boolean peerIsHost);
 
-        void onPeerTransportUpdated(@NonNull ServiceBinder binder,
-                                    @NonNull Peer peer,
-                                    int newTransportCode,
-                                    @Nullable Exception exception);
+        void onPeersStatusUpdated(@NonNull ServiceBinder binder,
+                                  @NonNull LinkedHashMap<String, Peer> vertexes,
+                                  @NonNull boolean isJoin);
 
     }
 
@@ -82,11 +81,13 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     private LocalPeer localPeer;
     private LocalGraph mPeersGraph;
 
-    /** Handler Messages */
-    public static final int ADVERTISE     = 0;
-    public static final int SCAN          = 1;
-    public static final int SEND_MESSAGE  = 2;
-    public static final int SHUTDOWN      = 3;
+    /**
+     * Handler Messages
+     */
+    public static final int ADVERTISE = 0;
+    public static final int SCAN = 1;
+    public static final int SEND_MESSAGE = 2;
+    public static final int SHUTDOWN = 3;
 
     @Override
     public void onCreate() {
@@ -108,9 +109,9 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     public void onDestroy() {
         Timber.d("Service destroyed");
         //TODO: 是否需要删除mPeersGraph?
-        mPeersGraph = null;
         sessionManager.stop();
         backgroundLooper.quit();
+//        mPeersGraph = null;
     }
 
     @Override
@@ -121,22 +122,26 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    /** ActivityReceivingMessagesIndicator */
+    /**
+     * ActivityReceivingMessagesIndicator
+     */
     @Override
     public boolean isActivityReceivingMessages() {
         return activityRecevingMessages;
     }
 
-    /** Binder through which Activities can interact with this Service */
+    /**
+     * Binder through which Activities can interact with this Service
+     */
     public class ServiceBinder extends Binder {
 
         public void registerLocalUserWithService(String userAlias, String serviceName) {
-            KeyPair keyPair = SodiumShaker.generateKeyPair();
-            localPeer = new LocalPeer(getApplicationContext(), keyPair, userAlias);
+            //KeyPair keyPair = SodiumShaker.generateKeyPair();
+            localPeer = new LocalPeer(getApplicationContext(), userAlias);
             //initialize graph using local peer.
             mPeersGraph = new LocalGraph(localPeer);
             if (sessionManager != null) sessionManager.stop();
@@ -168,11 +173,12 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
             addOutgoingTransfer(new OutgoingTransfer(data, recipient, sessionManager));
         }
 
-        /** Get the current preferred available transport for the given peer
-         *  This is generally the available transport with the highest bandwidth
+        /**
+         * Get the current preferred available transport for the given peer
+         * This is generally the available transport with the highest bandwidth
          *
-         *  @return either {@link sword.blemesh.sdk.transport.ble.BLETransport#TRANSPORT_CODE},
-         *                 or -1 if none available.
+         * @return either {@link sword.blemesh.sdk.transport.ble.BLETransport#TRANSPORT_CODE},
+         * or -1 if none available.
          */
         public int getTransportCodeForPeer(Peer remotePeer) {
             return sessionManager.getTransportCodeForPeer(remotePeer);
@@ -181,7 +187,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         /**
          * Set by Activity bound to this Service. If isActive is false, this Service
          * should post incoming messages as Notifications.
-         *
+         * <p/>
          * Note: It seems more appropriate for this to simply be a convenience value for
          * a client application. e.g: The value is set by BleMeshFragment and the client
          * application can query the state via {@link #isActivityReceivingMessages()}
@@ -220,7 +226,9 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         outPeerTransfers.get(recipient).add(transfer);
     }
 
-    /** Handler that processes Messages on a background thread */
+    /**
+     * Handler that processes Messages on a background thread
+     */
     private final class BackgroundThreadHandler extends Handler {
         public BackgroundThreadHandler(Looper looper) {
             super(looper);
@@ -248,8 +256,10 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         }
     }
 
-    private @Nullable IncomingTransfer getIncomingTransferForFileTransferMessage(SessionMessage transferMessage,
-                                                                                 Peer sender) {
+    private
+    @Nullable
+    IncomingTransfer getIncomingTransferForFileTransferMessage(SessionMessage transferMessage,
+                                                               Peer sender) {
 
         IncomingTransfer incomingTransfer = null;
         for (IncomingTransfer transfer : inPeerTransfers.get(sender)) {
@@ -264,8 +274,10 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         return incomingTransfer;
     }
 
-    private @Nullable OutgoingTransfer getOutgoingTransferForFileTransferMessage(SessionMessage transferMessage,
-                                                                                 Peer recipient) {
+    private
+    @Nullable
+    OutgoingTransfer getOutgoingTransferForFileTransferMessage(SessionMessage transferMessage,
+                                                               Peer recipient) {
 
         OutgoingTransfer outgoingTransfer = null;
         for (OutgoingTransfer transfer : outPeerTransfers.get(recipient)) {
@@ -284,18 +296,29 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 
     @Override
     public void directPeerStatusUpdated(@NonNull final Peer peer, @NonNull final Transport.ConnectionStatus newStatus, final boolean isHost) {
-        //更新单跳的新用户
+        GraphMessage mGraphMessage;
         switch (newStatus) {
             case CONNECTED:
+                Timber.d("New direct remote device alias:%s, MacAddress:%s ", peer.getAlias(), peer.getMacAddress());
                 mPeersGraph.newDirectRemote(peer);
+                mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_JOIN, mPeersGraph);
+                Timber.d("Start sending own graph message to peer %s", peer.getAlias());
+                sessionManager.sendMessage(mGraphMessage, peer);
                 break;
 
             case DISCONNECTED:
+                //TODO: 远端离开后，删除local peer 与 remote peer之间的边
+                //TODO: 删除后的图可以是非连通图，与local peer连通的设备列表由另外的变量处理。
+                Timber.d("Device has disconnected, alias:%s, MacAddress:%s ", peer.getAlias(), peer.getMacAddress());
 
+                mPeersGraph.lostDirectRemote(peer);
+                mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_LEFT, mPeersGraph);
+                sessionManager.broadcastMessage(mGraphMessage, peer);
+                updateForeground(mGraphMessage);
                 break;
         }
 
-
+     /*   //更新单跳对端设备的变化
         foregroundHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -305,7 +328,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                     Timber.w("Could not report peer status update, no callback registered");
             }
         });
-
+        */
     }
 
     @Override
@@ -328,18 +351,56 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         }
 
         final IncomingTransfer incomingTransfer;
-        if(message.getType().equals(DataTransferMessage.HEADER_TYPE)) {
+        switch (message.getType()) {
+            case GraphMessage.HEADER_TYPE:
+                /** Broadcast merged new graph to all reachable devices; */
+                sessionManager.broadcastMessage(message, sender);
 
-            incomingTransfer = new IncomingTransfer((DataTransferMessage) message, sender);
-            // No action is required for DataTransferMessage. Report complete
-            foregroundHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (callback != null)
-                        callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(), sender, null);
+                final GraphMessage remoteGraphMessage = (GraphMessage) message;
+                if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_JOIN)) {
+                    PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
+                    Timber.d("Merge remote graph to own local graph");
+                    mPeersGraph.mergeGarph(sender, remoteGraph);
+                    mPeersGraph.displayGraph();
                 }
-            });
+                if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_LEFT)) {
+                    //TODO:处理设备离开的情况
+                    PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
+                    Timber.d("replace own local graph with remote new graph ");
+                    mPeersGraph.trimGraph(sender, remoteGraph);
+                    mPeersGraph.displayGraph();
+                }
+                updateForeground(remoteGraphMessage);
+                break;
+
+            case DataTransferMessage.HEADER_TYPE:
+                incomingTransfer = new IncomingTransfer((DataTransferMessage) message, sender);
+                // No action is required for DataTransferMessage. Report complete
+                foregroundHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (callback != null)
+                            callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(), sender, null);
+                    }
+                });
+                break;
         }
+    }
+
+    public void updateForeground(final GraphMessage remoteGraphMessage) {
+        //更新多跳设备的变化情况
+        foregroundHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (callback != null) {
+                    LinkedHashMap<String,Peer> vertexes = new LinkedHashMap<>(mPeersGraph.getVertexList());
+                    vertexes.remove(localPeer.getMacAddress());
+                    callback.onPeersStatusUpdated(binder, vertexes, remoteGraphMessage.getAction().equals(GraphMessage.ACTION_JOIN));
+
+                } else
+                    Timber.w("Could not report peer status update, no callback registered");
+            }
+        });
     }
 
     @Override

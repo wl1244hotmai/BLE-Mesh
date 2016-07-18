@@ -70,6 +70,7 @@ public class SessionManager implements Transport.TransportCallback,
     private HashMap<String, Integer>                  identifierRssis             = new HashMap<>();
     private final HashMap<String, Peer>               identifiedPeers            = new HashMap<>();
     private final SetMultimap<Peer, String>           peerIdentifiers            = HashMultimap.create();
+    private final SetMultimap<String,String>          senderAddressMessageIDs = HashMultimap.create();
     private Set<String>                               identifyingPeers           = new HashSet<>();
     private Set<String>                               hostIdentifiers            = new HashSet<>();
 //    private HashMap<Peer, Transport>                  peerUpgradeRequests        = new HashMap<>();
@@ -114,6 +115,23 @@ public class SessionManager implements Transport.TransportCallback,
             transport.stop();
 
         reset();
+    }
+
+    @DebugLog
+    public void broadcastMessage(SessionMessage message,Peer receiveFrom){
+        Set<Peer> adjacents = getAvailablePeers();
+        for (Peer adjacent : adjacents) {
+            if(!adjacent.equals(receiveFrom))
+                sendMessage(message,adjacent);
+        }
+    }
+
+    @DebugLog
+    public void broadcastMessage(SessionMessage message){
+        Set<Peer> adjacents = getAvailablePeers();
+        for (Peer adjacent : adjacents) {
+            sendMessage(message,adjacent);
+        }
     }
 
     /**
@@ -197,7 +215,7 @@ public class SessionManager implements Transport.TransportCallback,
         identifyingPeers.clear();
         hostIdentifiers.clear();
         peerIdentifiers.clear();
-
+        senderAddressMessageIDs.clear();
         baseTransportState = new TransportState(false, false, false);
     }
 
@@ -479,7 +497,7 @@ public class SessionManager implements Transport.TransportCallback,
 
                 //set the rssi for direct remote device.
                 Peer peer = ((IdentityMessage) message).getPeer();
-                peer.setRssi(identifierRssis.get(senderIdentifier));
+                peer.setRssi( -identifierRssis.get(senderIdentifier)); //change minus rssi to absolute value
 
                 peerIdentifiers.put(peer, senderIdentifier);
 
@@ -504,13 +522,16 @@ public class SessionManager implements Transport.TransportCallback,
                         callback.directPeerStatusUpdated(peer, Transport.ConnectionStatus.CONNECTED, hostIdentifiers.contains(senderIdentifier));
                 }
 
-            } else if (identifiedPeers.containsKey(senderIdentifier)) {
+            } else if (identifiedPeers.containsKey(senderIdentifier) && !senderAddressMessageIDs.get(message.getMac_address()).contains(message.getID())) {
                 // This message is not involved in the Session layer, so we notify the next layer up
+                senderAddressMessageIDs.put(message.getMac_address(),message.getID());
                 callback.messageReceivedFromPeer(message, identifiedPeers.get(senderIdentifier));
 
             } else {
-
-                Timber.w("Received complete non-identity message from unidentified peer");
+                if(!identifiedPeers.containsKey(senderIdentifier))
+                    Timber.w("Received complete non-identity message from unidentified peer");
+                if(senderAddressMessageIDs.get(message.getMac_address()).contains(message.getID()))
+                    Timber.d("Had received this message with id %s before", message.getID());
             }
 
         } else {

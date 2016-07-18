@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import sword.blemesh.sdk.R;
 import sword.blemesh.sdk.app.BleMeshService;
@@ -255,8 +256,17 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
     }
 
     @Override
-    public void onPeerTransportUpdated(@NonNull BleMeshService.ServiceBinder binder, @NonNull Peer peer, int newTransportCode, @Nullable Exception exception) {
-        // do nothing for now
+    public void onPeersStatusUpdated(@NonNull BleMeshService.ServiceBinder binder,
+                                     @NonNull LinkedHashMap<String, Peer> vertexes,
+                                     @NonNull boolean isJoinAction){
+        peerAdapter.notifyPeersUpdated(vertexes,isJoinAction);
+        if(isJoinAction){
+            emptyContainer.setVisibility(View.GONE);
+        }else{
+            if (peerAdapter.getItemCount() == 0) { //only local node left;
+                emptyContainer.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     @Override
