@@ -284,8 +284,7 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
                 break;
 
             case BOTH:
-                this.serviceBinder.scanForOtherUsers();
-                this.serviceBinder.advertiseLocalUser();
+                this.serviceBinder.startTransport();
         }
     }
 

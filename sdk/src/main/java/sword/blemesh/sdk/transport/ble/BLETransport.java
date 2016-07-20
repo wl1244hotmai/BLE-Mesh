@@ -171,8 +171,8 @@ public class BLETransport extends Transport implements BLETransportCallback {
     @Override
     public void start() {
         openGattServer();
-        advertise();
-        scanForPeers();
+        if (isLollipop() && !peripheral.isAdvertising()) peripheral.start();
+        if (!central.isScanning()) central.start();
     }
 
     @Override

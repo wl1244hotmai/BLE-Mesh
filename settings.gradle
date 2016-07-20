@@ -1,1 +1,1 @@
-include ':app', ':singlehop', ':sdk'
+include ':app', ':quoteSendApp', ':sdk'

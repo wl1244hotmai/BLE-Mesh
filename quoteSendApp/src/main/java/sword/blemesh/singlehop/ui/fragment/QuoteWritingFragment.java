@@ -19,6 +19,7 @@ public class QuoteWritingFragment extends Fragment {
     public static interface WritingFragmentListener {
 
         public void onShareRequested(String quote, String author);
+        public void onBothSendAndReceive(String quote, String author);
     }
 
     private WritingFragmentListener listener;
@@ -44,7 +45,13 @@ public class QuoteWritingFragment extends Fragment {
                                           authorEntry.getText().toString());
             }
         });
-
+        root.findViewById(R.id.both_mode).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onBothSendAndReceive(quoteEntry.getText().toString(),
+                        authorEntry.getText().toString());
+            }
+        });
         return root;
     }
 

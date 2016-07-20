@@ -140,8 +140,8 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.ViewHolder> {
                     notifyPeerChanged(vertexes.get(p.getMacAddress()));
                 }
                 else{
-                    it.remove();
                     int idx = peers.indexOf(p);
+                    it.remove();
                     notifyPeerRemoved(idx);
                 }
             }

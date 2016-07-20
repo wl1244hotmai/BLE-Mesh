@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import sword.blemesh.sdk.mesh_graph.LocalGraph;
 import sword.blemesh.sdk.mesh_graph.PeersGraph;
@@ -151,6 +153,10 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 
         public LocalPeer getLocalPeer() {
             return localPeer;
+        }
+
+        public void startTransport(){
+            sessionManager.startTransport();
         }
 
         public void advertiseLocalUser() {
@@ -300,10 +306,15 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         switch (newStatus) {
             case CONNECTED:
                 Timber.d("New direct remote device alias:%s, MacAddress:%s ", peer.getAlias(), peer.getMacAddress());
-                mPeersGraph.newDirectRemote(peer);
+                synchronized (mPeersGraph.getClass()){
+                    mPeersGraph.newDirectRemote(peer);
+                    mPeersGraph.displayGraph();
+                }
+
                 mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_JOIN, mPeersGraph);
                 Timber.d("Start sending own graph message to peer %s", peer.getAlias());
                 sessionManager.sendMessage(mGraphMessage, peer);
+
                 break;
 
             case DISCONNECTED:
@@ -311,7 +322,10 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                 //TODO: 删除后的图可以是非连通图，与local peer连通的设备列表由另外的变量处理。
                 Timber.d("Device has disconnected, alias:%s, MacAddress:%s ", peer.getAlias(), peer.getMacAddress());
 
-                mPeersGraph.lostDirectRemote(peer);
+                synchronized (mPeersGraph.getClass()) {
+                    mPeersGraph.lostDirectRemote(peer);
+                    mPeersGraph.displayGraph();
+                }
                 mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_LEFT, mPeersGraph);
                 sessionManager.broadcastMessage(mGraphMessage, peer);
                 updateForeground(mGraphMessage);
@@ -357,18 +371,26 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                 sessionManager.broadcastMessage(message, sender);
 
                 final GraphMessage remoteGraphMessage = (GraphMessage) message;
-                if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_JOIN)) {
-                    PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
-                    Timber.d("Merge remote graph to own local graph");
-                    mPeersGraph.mergeGarph(sender, remoteGraph);
-                    mPeersGraph.displayGraph();
-                }
-                if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_LEFT)) {
-                    //TODO:处理设备离开的情况
-                    PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
-                    Timber.d("replace own local graph with remote new graph ");
-                    mPeersGraph.trimGraph(sender, remoteGraph);
-                    mPeersGraph.displayGraph();
+                synchronized (mPeersGraph.getClass()) {
+                    if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_JOIN)) {
+                        PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
+                        Timber.d("Before merge graph, local graph is:");
+                        mPeersGraph.displayGraph();
+                        Timber.d("Before merge graph, remote graph is:");
+                        remoteGraph.displayGraph();
+                        Timber.d("Merge remote graph to own local graph");
+                        mPeersGraph.mergeGarph(sender, remoteGraph);
+                        mPeersGraph.displayGraph();
+                    }
+                    if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_LEFT)) {
+                        //TODO:处理设备离开的情况
+                        PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
+                        Timber.d("Before replace new  graph, local graph is:");
+                        mPeersGraph.displayGraph();
+                        Timber.d("replace own local graph with remote new graph ");
+                        mPeersGraph.trimGraph(sender, remoteGraph);
+                        mPeersGraph.displayGraph();
+                    }
                 }
                 updateForeground(remoteGraphMessage);
                 break;

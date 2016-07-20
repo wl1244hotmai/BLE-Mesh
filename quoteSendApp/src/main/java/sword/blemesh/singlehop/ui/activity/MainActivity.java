@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
 
     private Toolbar toolbar;
     private MenuItem receiveMenuItem;
+    byte[] payloadToShare;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         dataToShare.put("quote", quote);
         dataToShare.put("author", author);
 
-        byte[] payloadToShare = new JSONObject(dataToShare).toString().getBytes();
+        payloadToShare = new JSONObject(dataToShare).toString().getBytes();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, PeerFragment.toSend(payloadToShare, PrefsManager.getUsername(this), SERVICE_NAME))
@@ -129,6 +130,24 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         receiveMenuItem.setVisible(false);
         toolbar.setNavigationIcon(R.mipmap.ic_cancel);
         toolbar.setTitle(getString(R.string.receiving_quote));
+        showSubtitle(true);
+    }
+
+    public void onBothSendAndReceive(String quote, String author){
+        HashMap<String, Object> dataToShare = new HashMap<>();
+        dataToShare.put("quote", quote);
+        dataToShare.put("author", author);
+        payloadToShare = new JSONObject(dataToShare).toString().getBytes();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.frame, PeerFragment.toSendAndReceive(PrefsManager.getUsername(this), SERVICE_NAME))
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .commit();
+
+        receiveMenuItem.setVisible(false);
+        toolbar.setNavigationIcon(R.mipmap.ic_cancel);
+        toolbar.setTitle(getString(R.string.sending_quote));
         showSubtitle(true);
     }
 
@@ -184,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         // unused. If we were using PeerFragment in send and receive mode, we would
         // deliver data for peer:
         // fragment.sendDataToPeer("Some dynamic data".getBytes(), recipient);
+        fragment.sendDataToPeer(payloadToShare,recipient);
 
     }
 

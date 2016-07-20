@@ -6,6 +6,7 @@
     <!-- MainActivity -->
     <string name="receive">Receive</string>
     <string name="sending_quote">Sending Quote</string>
+    <string name="both_mode">Both Send and Receive</string>
     <string name="as_name">as \'%1$s\'</string>
     <string name="receiving_quote">Receiving Quote</string>
     <string name="quote_received">Quote Received</string>

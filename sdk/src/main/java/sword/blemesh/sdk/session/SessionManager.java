@@ -97,6 +97,11 @@ public class SessionManager implements Transport.TransportCallback,
         return serviceName;
     }
 
+    public void startTransport(){
+        transports.first().start();
+        baseTransportState = new TransportState(baseTransportState.isStopped, true, baseTransportState.wasScanning);
+    }
+
     public void advertiseLocalPeer() {
         // Only advertise on the "base" (first) transport
         transports.first().advertise();
@@ -121,8 +126,10 @@ public class SessionManager implements Transport.TransportCallback,
     public void broadcastMessage(SessionMessage message,Peer receiveFrom){
         Set<Peer> adjacents = getAvailablePeers();
         for (Peer adjacent : adjacents) {
-            if(!adjacent.equals(receiveFrom))
-                sendMessage(message,adjacent);
+            if(!adjacent.equals(receiveFrom)) {
+                Timber.d("broadcast message to Peer %s %s", adjacent.getAlias(), adjacent.getMacAddress());
+                sendMessage(message, adjacent);
+            }
         }
     }
 
@@ -130,6 +137,7 @@ public class SessionManager implements Transport.TransportCallback,
     public void broadcastMessage(SessionMessage message){
         Set<Peer> adjacents = getAvailablePeers();
         for (Peer adjacent : adjacents) {
+            Timber.d("broadcast message to Peer %s %s", adjacent.getAlias(),adjacent.getMacAddress());
             sendMessage(message,adjacent);
         }
     }
@@ -319,6 +327,10 @@ public class SessionManager implements Transport.TransportCallback,
 
         if (messagePair != null) {
 
+            byte[] toSend = sender.getNextChunk(transport.getLongWriteBytes());
+            if (toSend != null)
+                transport.sendData(toSend, identifier);
+
             SessionMessage message = messagePair.first;
             float progress = messagePair.second;
 
@@ -364,9 +376,7 @@ public class SessionManager implements Transport.TransportCallback,
                 Timber.w("Cannot report %s message send, %s not yet identified",
                     message.getType(), identifier);
 
-            byte[] toSend = sender.getNextChunk(transport.getLongWriteBytes());
-            if (toSend != null)
-                transport.sendData(toSend, identifier);
+
         } else
             Timber.w("No current message corresponding to dataSentToIdentifier");
     }
