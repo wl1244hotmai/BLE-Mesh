@@ -61,6 +61,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                                   @NonNull LinkedHashMap<String, Peer> vertexes,
                                   @NonNull boolean isJoin);
 
+        void onNewLog(@NonNull String logText);
     }
 
     private SessionManager sessionManager;
@@ -308,7 +309,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                 Timber.d("New direct remote device alias:%s, MacAddress:%s ", peer.getAlias(), peer.getMacAddress());
                 synchronized (mPeersGraph.getClass()){
                     mPeersGraph.newDirectRemote(peer);
-                    mPeersGraph.displayGraph();
+//                    mPeersGraph.displayGraph();
                 }
 
                 mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_JOIN, mPeersGraph);
@@ -324,7 +325,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 
                 synchronized (mPeersGraph.getClass()) {
                     mPeersGraph.lostDirectRemote(peer);
-                    mPeersGraph.displayGraph();
+//                    mPeersGraph.displayGraph();
                 }
                 mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_LEFT, mPeersGraph);
                 sessionManager.broadcastMessage(mGraphMessage, peer);
@@ -374,22 +375,24 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                 synchronized (mPeersGraph.getClass()) {
                     if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_JOIN)) {
                         PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
-                        Timber.d("Before merge graph, local graph is:");
-                        mPeersGraph.displayGraph();
-                        Timber.d("Before merge graph, remote graph is:");
-                        remoteGraph.displayGraph();
+//                        Timber.d("Before merge graph, local graph is:");
+//                        mPeersGraph.displayGraph();
+//                        Timber.d("Before merge graph, remote graph is:");
+//                        remoteGraph.displayGraph();
                         Timber.d("Merge remote graph to own local graph");
                         mPeersGraph.mergeGarph(sender, remoteGraph);
-                        mPeersGraph.displayGraph();
+                        callback.onNewLog("After merge "+sender.getAlias() +" the LocalGraph is: ");
+                        callback.onNewLog(mPeersGraph.displayGraph());
                     }
                     if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_LEFT)) {
                         //TODO:处理设备离开的情况
                         PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
-                        Timber.d("Before replace new  graph, local graph is:");
-                        mPeersGraph.displayGraph();
+//                        Timber.d("Before replace new  graph, local graph is:");
+//                        mPeersGraph.displayGraph();
                         Timber.d("replace own local graph with remote new graph ");
                         mPeersGraph.trimGraph(sender, remoteGraph);
-                        mPeersGraph.displayGraph();
+                        callback.onNewLog("After delete "+sender.getAlias() +" the LocalGraph is: ");
+                        callback.onNewLog(mPeersGraph.displayGraph());
                     }
                 }
                 updateForeground(remoteGraphMessage);

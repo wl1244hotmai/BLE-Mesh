@@ -57,7 +57,6 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
     public enum Mode { SEND, RECEIVE, BOTH }
 
     public interface PeerFragmentListener {
-
         /**
          * A transfer was received from a peer.
          * Called when mode is {@link Mode#RECEIVE} or {@link Mode#BOTH}
@@ -91,6 +90,7 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
         void onFinished(@NonNull PeerFragment fragment,
                         @Nullable Exception exception);
 
+        void onNewLog(@NonNull String logText);
     }
 
     private ViewGroup emptyContainer;
@@ -267,6 +267,11 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
                 emptyContainer.setVisibility(View.VISIBLE);
             }
         }
+    }
+
+    @Override
+    public void onNewLog(@NonNull String logText) {
+        callback.onNewLog(logText);
     }
 
     @Override

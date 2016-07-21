@@ -223,15 +223,19 @@ public class LocalGraph extends PeersGraph {
 
     }
 
-    public void displayAllShortestPath(){
+    public String displayAllShortestPath(){
+        String all_shortest_path = "";
         System.out.println("displayAllShortestPath");
         for (String node : vertexList.keySet()) {
-            displayShortestPath(node);
+            all_shortest_path+=displayShortestPath(node);
         }
+        all_shortest_path+="\n";
         System.out.println();
+        return all_shortest_path;
     }
 
-    public void displayShortestPath(String desc){
+    public String displayShortestPath(String desc){
+        String shortest_path = "";
         Stack<String> shortestPath = new Stack<>();
         String address = desc;
         Shortest_Path_Info this_info;
@@ -241,11 +245,13 @@ public class LocalGraph extends PeersGraph {
             address = this_info.getPrev_node_address();
         }
         while(!shortestPath.isEmpty()){
-            System.out.print(shortestPath.peek());
+            shortest_path+=shortestPath.peek();
             shortestPath.pop();
-            if(shortestPath.size() > 0)  System.out.print("->");
+            if(shortestPath.size() > 0)  shortest_path+="->";
         }
-        System.out.println();
+        shortest_path+="\n";
+        System.out.print(shortest_path);
+        return shortest_path;
     }
     //</editor-fold>
 

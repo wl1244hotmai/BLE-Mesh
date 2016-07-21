@@ -18,13 +18,12 @@ public class QuoteWritingFragment extends Fragment {
 
     public static interface WritingFragmentListener {
 
-        public void onShareRequested(String quote, String author);
-        public void onBothSendAndReceive(String quote, String author);
+        public void onShareRequested(String quote);
+        public void onBothSendAndReceive(String quote);
     }
 
     private WritingFragmentListener listener;
     private EditText quoteEntry;
-    private EditText authorEntry;
 
     public QuoteWritingFragment() {
         // Required empty public constructor
@@ -36,20 +35,17 @@ public class QuoteWritingFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_writing, container, false);
         quoteEntry = (EditText) root.findViewById(R.id.quote_entry);
-        authorEntry = (EditText) root.findViewById(R.id.author_entry);
 
         root.findViewById(R.id.share_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onShareRequested(quoteEntry.getText().toString(),
-                                          authorEntry.getText().toString());
+                listener.onShareRequested(quoteEntry.getText().toString());
             }
         });
         root.findViewById(R.id.both_mode).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onBothSendAndReceive(quoteEntry.getText().toString(),
-                        authorEntry.getText().toString());
+                listener.onBothSendAndReceive(quoteEntry.getText().toString());
             }
         });
         return root;

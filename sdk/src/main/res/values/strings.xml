@@ -3,4 +3,5 @@
     <string name="ble_not_supported">This device does not support Bluetooth LE.</string>
     <string name="bt_unavailable">Bluetooth LE is not available on this device.</string>
     <string name="searching_for_peers">Searching for Peers</string>
+    <string name="blemesh_log">BLEMesh Log</string>
 </resources>

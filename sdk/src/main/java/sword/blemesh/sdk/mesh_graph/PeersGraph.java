@@ -121,17 +121,18 @@ public class PeersGraph{
                 put(edge.getDesc(), edge.getWeight());
     }
 
-    public void displayGraph() {
-        System.out.println("Print graph edges");
+    public String displayGraph() {
+        String graph_str = "";
+        graph_str+="Print graph edges\n";
         for(String src : getVertexList().keySet()){
-            System.out.println(vertexList.get(src).getAlias()+ "(" + src + "):  ");
+            graph_str+=vertexList.get(src).getAlias()+ "(" + src + "):  \n";
             for(String desc : getEdgeMatrix().get(src).keySet()){
-                System.out.println("——" + vertexList.get(desc).getAlias() +
-                        "(address:" + desc + " rssi:" + getEdgeMatrix().get(src).get(desc) + "); ");
+                graph_str+="——" + vertexList.get(desc).getAlias() +
+                        "(address:" + desc + " rssi:" + getEdgeMatrix().get(src).get(desc) + "); \n";
             }
-            System.out.println();
         }
-        System.out.println();
+        System.out.println(graph_str);
+        return graph_str;
     }
 
 }

@@ -1,6 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="sword.blemesh.singlehop.ui.activity.AdvancedUseActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" android:showAsAction="never" />
+    tools:context="sword.blemesh.singlehop.ui.activity.AdvancedUseActivity"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:title="@string/action_settings" />
+    <item
+        android:id="@+id/view_logs"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_menu_manage"
+        app:showAsAction="collapseActionView"
+        android:title="@string/view_logs" />
 </menu>

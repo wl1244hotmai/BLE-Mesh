@@ -8,14 +8,19 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.SupportMenuInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toolbar;
 
 import com.nispok.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
@@ -37,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         PeerFragment.PeerFragmentListener {
 
     private static final String SERVICE_NAME = "BleSingleDemo";
-
+    private TextView logView;
     private Toolbar toolbar;
     private MenuItem receiveMenuItem;
     byte[] payloadToShare;
@@ -48,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
 
+        assert toolbar != null;
         toolbar.inflateMenu(R.menu.activity_main);
 
         receiveMenuItem = toolbar.getMenu().findItem(R.id.action_receive);
@@ -58,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                 getSupportFragmentManager().popBackStack();
             }
         });
+
+        logView = (TextView)findViewById(R.id.ble_mesh_log);
 
         Fragment baseFragment;
 
@@ -87,6 +95,13 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater _MenuInflater = new SupportMenuInflater(this);
+        _MenuInflater.inflate(R.menu.activity_main,menu);
+        return true;
+    }
+
     private void showSubtitle(boolean doShow) {
         if (doShow) {
             toolbar.setSubtitle(getString(R.string.as_name, PrefsManager.getUsername(this)));
@@ -101,10 +116,10 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     }
 
     @Override
-    public void onShareRequested(String quote, String author) {
+    public void onShareRequested(String quote) {
+        logView.setText("");
         HashMap<String, Object> dataToShare = new HashMap<>();
         dataToShare.put("quote", quote);
-        dataToShare.put("author", author);
 
         payloadToShare = new JSONObject(dataToShare).toString().getBytes();
 
@@ -121,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     }
 
     public void onReceiveButtonClick() {
+        logView.setText("");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, PeerFragment.toReceive(PrefsManager.getUsername(this), SERVICE_NAME))
                 .addToBackStack(null)
@@ -133,10 +149,10 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         showSubtitle(true);
     }
 
-    public void onBothSendAndReceive(String quote, String author){
+    public void onBothSendAndReceive(String quote){
+        logView.setText("");
         HashMap<String, Object> dataToShare = new HashMap<>();
         dataToShare.put("quote", quote);
-        dataToShare.put("author", author);
         payloadToShare = new JSONObject(dataToShare).toString().getBytes();
 
         getSupportFragmentManager().beginTransaction()
@@ -174,8 +190,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(getString(R.string.quote_received))
                         .setMessage(getString(R.string.quote_and_author,
-                                json.get("quote"),
-                                json.get("author")))
+                                json.get("quote")))
                         .setPositiveButton(getString(R.string.ok), null)
                         .show();
             } catch (JSONException e) {
@@ -211,6 +226,11 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     public void onFinished(@NonNull PeerFragment fragment, Exception exception) {
         // Remove last fragment
         getSupportFragmentManager().popBackStack();
+    }
+
+    @Override
+    public void onNewLog(@NonNull String logText) {
+        logView.append(logText);
     }
 
     @Override
