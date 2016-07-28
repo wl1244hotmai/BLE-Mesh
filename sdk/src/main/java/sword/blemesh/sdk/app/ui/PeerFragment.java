@@ -225,8 +225,8 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
 
         callback.onDataReceived(this, data, sender);
 
-        if (mode == Mode.RECEIVE)
-            callback.onFinished(this, null);
+/*        if (mode == Mode.RECEIVE)
+            callback.onFinished(this, null);*/
     }
 
     @Override
@@ -234,8 +234,8 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
         if (callback == null) return; // Fragment was detached but not destroyed
         callback.onDataSent(this, data, recipient, desc);
 
-        if (mode == Mode.SEND)
-            callback.onFinished(this, null);
+/*        if (mode == Mode.SEND)
+            callback.onFinished(this, null);*/
     }
 
     @Override
