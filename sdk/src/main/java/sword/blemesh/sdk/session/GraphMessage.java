@@ -14,20 +14,25 @@ import sword.blemesh.sdk.mesh_graph.PeersGraph;
 
 /**
  * Created by 力 on 2016/6/15.
+ * Message for graph infomation
  */
 public class GraphMessage extends SessionMessage{
 
-    public static final String ACTION_JOIN = "join";
-    public static final String ACTION_LEFT = "left";
+    public static final int ACTION_JOIN = 0x01;
+    public static final int ACTION_LEFT = 0x02;
+    public static final int SINGLE_CAST = 0x03;
+    public static final int BROADCAST   = 0x04;
     public static final String HEADER_TYPE = "graph_info";
     public static final String HEADER_EXTRA = "extra";
     public static final String HEADER_LOCAL_MACADDRESS = "local_mac_address";
     public static final String HEADER_REMOTE_ACTION = "action";
+    public static final String HEADER_CAST_FORM = "cast";
     public static final String BODY_VERTEX = "body_vertex";
     public static final String BODT_EDGES = "body_edges";
 
     private Map<String, Object> extraHeaders;
-    private String action;
+    private int action;
+    private int cast;
     private String localMacAddress;
 
     private byte[] dataBytes;
@@ -43,7 +48,8 @@ public class GraphMessage extends SessionMessage{
         this.headers      = headers;
         bodyLengthBytes   = (int) headers.get(HEADER_BODY_LENGTH);
         status            = body == null ? Status.HEADER_ONLY : Status.COMPLETE;
-        action            = (String) headers.get(HEADER_REMOTE_ACTION);
+        action            = (int) headers.get(HEADER_REMOTE_ACTION);
+        cast              = (int) headers.get(HEADER_CAST_FORM);
         if (body != null){
             setDataBody(body);
         }
@@ -56,19 +62,21 @@ public class GraphMessage extends SessionMessage{
     // <editor-fold desc="Outgoing Constructors">
 
     public static GraphMessage createOutgoing(@Nullable Map<String, Object> extraHeaders,
-                                              String action, @Nullable PeersGraph peersGraph) {
+                                              int action,int cast, @Nullable PeersGraph peersGraph) {
 
-        return new GraphMessage(peersGraph, action, extraHeaders);
+        return new GraphMessage(peersGraph, action, cast, extraHeaders);
     }
 
     // To avoid confusion between the incoming constructor which takes a
     // Map of the completely deserialized headers and byte payload, we hide
     // this contstructor behind the static creator 'createOutgoing'
     private GraphMessage(@Nullable PeersGraph peersGraph,
-                         String action,
-                                @Nullable Map<String, Object> extraHeaders) {
+                         int action,
+                         int cast,
+                         @Nullable Map<String, Object> extraHeaders) {
         super();
         this.action = action;
+        this.cast = cast;
         this.extraHeaders = extraHeaders;
         init();
         if (peersGraph != null) {
@@ -108,6 +116,7 @@ public class GraphMessage extends SessionMessage{
         JSONObject remoteGraphJSONObject = null;
         try {
             assert body != null;
+            System.out.println(new String(body));
             remoteGraphJSONObject = new JSONObject(new String(body));
         } catch (JSONException e) {
             e.printStackTrace();
@@ -120,12 +129,13 @@ public class GraphMessage extends SessionMessage{
         return new PeersGraph(vertexJSONObject,edgesJSONObject);
     }
 
-    public String getAction(){return action;}
+    public int getAction(){return action;}
 
     @Override
     protected HashMap<String, Object> populateHeaders() {
         HashMap<String, Object> headerMap = super.populateHeaders();
         headerMap.put(HEADER_REMOTE_ACTION,action);
+        headerMap.put(HEADER_CAST_FORM,cast);
         if (extraHeaders != null) {
             headerMap.put(HEADER_EXTRA, extraHeaders);
         }

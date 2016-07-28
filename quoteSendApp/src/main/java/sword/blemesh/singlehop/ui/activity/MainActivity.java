@@ -202,11 +202,12 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     @Override
     public void onDataSent(@NonNull PeerFragment fragment,
                            @Nullable byte[] data,
-                           @NonNull Peer recipient) {
+                           @NonNull Peer recipient,
+                           @NonNull Peer desc) {
 
         // In this example app, we're only using the headers data
         if (data != null) {
-            Timber.d("Sent data to %s", recipient.getAlias());
+            Timber.d("Sent data to %s, desc is %s", recipient.getAlias(),desc.getAlias());
             Snackbar.with(getApplicationContext())
                     .text(R.string.quote_sent)
                     .show(this);
@@ -230,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
 
     @Override
     public void onNewLog(@NonNull String logText) {
-        logView.append(logText);
+        logView.append(logText + "\n");
     }
 
     @Override

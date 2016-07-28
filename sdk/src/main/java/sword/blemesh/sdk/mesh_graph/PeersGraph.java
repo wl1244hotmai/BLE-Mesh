@@ -127,7 +127,7 @@ public class PeersGraph{
         for(String src : getVertexList().keySet()){
             graph_str+=vertexList.get(src).getAlias()+ "(" + src + "):  \n";
             for(String desc : getEdgeMatrix().get(src).keySet()){
-                graph_str+="——" + vertexList.get(desc).getAlias() +
+                graph_str+="->" + vertexList.get(desc).getAlias() +
                         "(address:" + desc + " rssi:" + getEdgeMatrix().get(src).get(desc) + "); \n";
             }
         }

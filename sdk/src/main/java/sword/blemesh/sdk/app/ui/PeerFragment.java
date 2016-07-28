@@ -71,7 +71,8 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
          */
         void onDataSent(@NonNull PeerFragment fragment,
                         @Nullable byte[] data,
-                        @NonNull Peer recipient);
+                        @NonNull Peer recipient,
+                        @NonNull Peer desc);
 
         /**
          * The user selected recipient to receive data. Provide that data in a call
@@ -229,9 +230,9 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
     }
 
     @Override
-    public void onDataSent(@NonNull BleMeshService.ServiceBinder binder, byte[] data, @NonNull Peer recipient, Exception exception) {
+    public void onDataSent(@NonNull BleMeshService.ServiceBinder binder, byte[] data, @NonNull Peer recipient, @NonNull Peer desc, Exception exception) {
         if (callback == null) return; // Fragment was detached but not destroyed
-        callback.onDataSent(this, data, recipient);
+        callback.onDataSent(this, data, recipient, desc);
 
         if (mode == Mode.SEND)
             callback.onFinished(this, null);

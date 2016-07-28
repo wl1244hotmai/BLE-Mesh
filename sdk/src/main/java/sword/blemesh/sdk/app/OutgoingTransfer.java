@@ -24,7 +24,7 @@ public class OutgoingTransfer extends Transfer implements IncomingMessageListene
         COMPLETE
     }
 
-    private Peer recipient;
+    private Peer next_reply_node;
     private SessionMessageScheduler messageSender;
     private State state;
 
@@ -32,12 +32,23 @@ public class OutgoingTransfer extends Transfer implements IncomingMessageListene
 
     public OutgoingTransfer(byte[] data,
                             Peer recipient,
+                            Peer next_reply_node,
                             SessionMessageScheduler messageSender) {
 
-        init(recipient, messageSender);
+        init(next_reply_node, messageSender);
 
-        transferMessage = DataTransferMessage.createOutgoing(null, data);
-        messageSender.sendMessage(transferMessage, recipient);
+        transferMessage = DataTransferMessage.createOutgoing(null, recipient, data);
+        messageSender.sendMessage(transferMessage, next_reply_node);
+
+        state = State.AWAITING_DATA_ACK;
+    }
+
+    public OutgoingTransfer(Peer next_reply_node,
+                            SessionMessage message,
+                            SessionMessageScheduler messageSender){
+        init(next_reply_node, messageSender);
+        this.transferMessage = message;
+        messageSender.sendMessage(transferMessage, next_reply_node);
 
         state = State.AWAITING_DATA_ACK;
     }
@@ -46,7 +57,7 @@ public class OutgoingTransfer extends Transfer implements IncomingMessageListene
     // </editor-fold desc="Outgoing Constructors">
 
     private void init(Peer recipient, SessionMessageScheduler sender) {
-        this.recipient = recipient;
+        this.next_reply_node = recipient;
         this.messageSender = sender;
     }
 
@@ -55,8 +66,8 @@ public class OutgoingTransfer extends Transfer implements IncomingMessageListene
         return (String) transferMessage.getHeaders().get(SessionMessage.HEADER_ID);
     }
 
-    public Peer getRecipient() {
-        return recipient;
+    public Peer getNext_reply_node() {
+        return next_reply_node;
     }
 
     @Override

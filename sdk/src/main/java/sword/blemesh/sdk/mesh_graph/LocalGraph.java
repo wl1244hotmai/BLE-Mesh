@@ -63,7 +63,7 @@ public class LocalGraph extends PeersGraph {
 
     private Peer localNode;
     private LinkedHashMap<String,Shortest_Path_Info> Shortest_Path_Info_Map;
-
+    private LinkedHashSet<String> unMergedNewNodes = new LinkedHashSet<>();
     //存储以用来显示
     private LinkedHashMap<String,Peer> removedPeers;
     private LinkedHashMap<String,Peer> newPeers;
@@ -76,7 +76,7 @@ public class LocalGraph extends PeersGraph {
 //        insertEdge(new PeersEdge(LocalNode.getAddress(),LocalNode.getAddress(),0));
     }
 
-    //<editor-fold desc="Shortest Path Method">
+    //<editor-fold desc="Public Method">
 
     /**
      * Get Shortest path,Only Local Graph has this method
@@ -88,7 +88,7 @@ public class LocalGraph extends PeersGraph {
         return null;
     }
 
-    public void newDirectRemote(Peer remoteNode) {
+    synchronized public void newDirectRemote(Peer remoteNode) {
         Timber.d("New direct remote peer: %s  %s", remoteNode.getAlias(), remoteNode.getMacAddress());
         if (!hasVertex(remoteNode)) {
             insertVertex(remoteNode);
@@ -99,13 +99,16 @@ public class LocalGraph extends PeersGraph {
         insertEdge(new PeersEdge(remoteNode.getMacAddress(),
                 localNode.getMacAddress(),
                 remoteNode.getRssi()));
+        unMergedNewNodes.add(remoteNode.getMacAddress());
     }
 
-    //TODO: 函数还未实现
-    public void lostDirectRemote(Peer remoteNode){
+    synchronized public void lostDirectRemote(Peer remoteNode){
         Timber.d("Lost direct remote peer: %s  %s", remoteNode.getAlias(), remoteNode.getMacAddress());
         deleteEdge(localNode.getMacAddress(),remoteNode.getMacAddress());
-        calCluateShortestPath();
+        if(unMergedNewNodes.contains(remoteNode.getMacAddress()))
+            unMergedNewNodes.remove(remoteNode.getMacAddress());
+        else
+            calCluateShortestPath();
     }
 
     /**
@@ -114,7 +117,7 @@ public class LocalGraph extends PeersGraph {
      * @param remoteNode remote peer that broadcast this graph message
      * @param otherGraph graph of new connected node
      */
-    public void mergeGarph(Peer remoteNode, PeersGraph otherGraph) {
+    synchronized public void mergeGarph(Peer remoteNode, PeersGraph otherGraph) {
         for(Peer node : otherGraph.getVertexList().values()){
             if (!hasVertex(node)) {
                 insertVertex(node);
@@ -124,7 +127,9 @@ public class LocalGraph extends PeersGraph {
         for(String src : otherGraph.getEdgeMatrix().keySet()){
             mergeRow(src,otherGraph.getEdgeMatrix().get(src));
         }
-        calCluateShortestPath();
+        unMergedNewNodes.remove(remoteNode.getMacAddress());
+        if(unMergedNewNodes.isEmpty())
+            calCluateShortestPath();
     }
 
     /**
@@ -133,7 +138,7 @@ public class LocalGraph extends PeersGraph {
      * @param remoteNode remote peer that broadcast this graph message
      * @param otherGraph graph after some remote node disconnect, used to replace loace one
      */
-    public void trimGraph(Peer remoteNode, PeersGraph otherGraph){
+    synchronized public void trimGraph(Peer remoteNode, PeersGraph otherGraph){
         for (String vertex : otherGraph.getVertexList().keySet()) {
             Peer updatedPeer = otherGraph.getVertexList().get(vertex);
             if(!this.vertexList.containsKey(vertex)){
@@ -223,6 +228,27 @@ public class LocalGraph extends PeersGraph {
 
     }
 
+    public Peer getNextReply(String desc){
+        if(LocalPeer.getLocalMacAddress().equals(desc)){
+            return null;
+        }
+        Stack<String> shortestPath = new Stack<>();
+        String address = desc;
+        Shortest_Path_Info this_info;
+        while(address!=null){
+            shortestPath.push(address);
+            this_info = Shortest_Path_Info_Map.get(address);
+            address = this_info.getPrev_node_address();
+        }
+        shortestPath.pop(); // pop the local node;
+        Peer next_reply = vertexList.get(shortestPath.peek());
+        Timber.d("getNextReply desc is %s, next replay is %s : %s",
+                desc,
+                next_reply.getAlias(),
+                next_reply.getMacAddress());
+        return next_reply;
+    }
+
     public String displayAllShortestPath(){
         String all_shortest_path = "";
         System.out.println("displayAllShortestPath");
@@ -247,7 +273,7 @@ public class LocalGraph extends PeersGraph {
         while(!shortestPath.isEmpty()){
             shortest_path+=shortestPath.peek();
             shortestPath.pop();
-            if(shortestPath.size() > 0)  shortest_path+="->";
+            if(shortestPath.size() > 0)  shortest_path+="-->";
         }
         shortest_path+="\n";
         System.out.print(shortest_path);

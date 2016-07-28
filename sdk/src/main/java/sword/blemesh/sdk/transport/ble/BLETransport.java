@@ -289,12 +289,13 @@ public class BLETransport extends Transport implements BLETransportCallback {
                 didSend = gattClients.write(toSend, dataCharacteristic.getUuid(), identifier);
             }
 
+            //Whatever sent successful or failed, both drop this data.
+            //If failed, sessionMessageSerializer will queue this data again so don't worry
+            outBuffers.get(identifier).poll();
             if (didSend) {
-                Timber.d("Sent %d byte chunk to %s. %d more chunks in queue", toSend.length, identifier, outBuffers.get(identifier).size() - 1);
-
-                outBuffers.get(identifier).poll();
+                Timber.d("Sent %d byte chunk to %s. %d more chunks in queue", toSend.length, identifier, outBuffers.get(identifier).size());
             } else {
-                Timber.w("Failed to send %d bytes to %s", toSend.length, identifier);
+                Timber.w("Failed to send %d bytes to %s, drop it and now %s chunks in queue", toSend.length, identifier,outBuffers.get(identifier).size());
                 didSendAll = false;
                 break;
             }

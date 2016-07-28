@@ -50,6 +50,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         void onDataSent(@NonNull ServiceBinder binder,
                         @Nullable byte[] data,
                         @NonNull Peer recipient,
+                        @NonNull Peer desc,
                         @Nullable Exception exception);
 
         void onPeerStatusUpdated(@NonNull ServiceBinder binder,
@@ -177,7 +178,8 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         }
 
         public void send(byte[] data, Peer recipient) {
-            addOutgoingTransfer(new OutgoingTransfer(data, recipient, sessionManager));
+            Peer next_reply_node = getNextReply(recipient);
+            addOutgoingTransfer(new OutgoingTransfer(data, recipient, next_reply_node, sessionManager));
         }
 
         /**
@@ -209,6 +211,23 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         }
     }
 
+    private void forward(SessionMessage message,Peer recipient){
+        Peer next_reply_node = getNextReply(recipient);
+        addOutgoingTransfer(new OutgoingTransfer(next_reply_node,message,sessionManager));
+    }
+
+    private Peer getNextReply(Peer recipient){
+        Peer next_reply_node;
+        next_reply_node = mPeersGraph.getNextReply(recipient.getMacAddress());
+        if(next_reply_node.equals(recipient))
+            Timber.d("Next hop is destination recipient %s : %s",recipient.getAlias(),recipient.getMacAddress());
+        else
+            Timber.d("Desc is %s : %s, next replay is %s : %s",
+                    recipient.getAlias(), recipient.getMacAddress(),
+                    next_reply_node.getAlias(), next_reply_node.getMacAddress());
+        return next_reply_node;
+    }
+
     private void addIncomingTransfer(IncomingTransfer transfer) {
         Peer recipient = transfer.getSender();
 
@@ -222,7 +241,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
     }
 
     private void addOutgoingTransfer(OutgoingTransfer transfer) {
-        Peer recipient = transfer.getRecipient();
+        Peer recipient = transfer.getNext_reply_node();
 
         incomingMessageListeners.add(transfer);
         messageDeliveryListeners.add(transfer);
@@ -307,12 +326,12 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         switch (newStatus) {
             case CONNECTED:
                 Timber.d("New direct remote device alias:%s, MacAddress:%s ", peer.getAlias(), peer.getMacAddress());
-                synchronized (mPeersGraph.getClass()){
+//                synchronized (mPeersGraph.getClass()){
                     mPeersGraph.newDirectRemote(peer);
 //                    mPeersGraph.displayGraph();
-                }
+//                }
 
-                mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_JOIN, mPeersGraph);
+                mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_JOIN, GraphMessage.SINGLE_CAST, mPeersGraph);
                 Timber.d("Start sending own graph message to peer %s", peer.getAlias());
                 sessionManager.sendMessage(mGraphMessage, peer);
 
@@ -323,11 +342,11 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                 //TODO: 删除后的图可以是非连通图，与local peer连通的设备列表由另外的变量处理。
                 Timber.d("Device has disconnected, alias:%s, MacAddress:%s ", peer.getAlias(), peer.getMacAddress());
 
-                synchronized (mPeersGraph.getClass()) {
+//                synchronized (mPeersGraph.getClass()) {
                     mPeersGraph.lostDirectRemote(peer);
 //                    mPeersGraph.displayGraph();
-                }
-                mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_LEFT, mPeersGraph);
+//                }
+                mGraphMessage = GraphMessage.createOutgoing(null, GraphMessage.ACTION_LEFT, GraphMessage.BROADCAST, mPeersGraph);
                 sessionManager.broadcastMessage(mGraphMessage, peer);
                 updateForeground(mGraphMessage);
                 break;
@@ -365,15 +384,13 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 
         }
 
-        final IncomingTransfer incomingTransfer;
         switch (message.getType()) {
             case GraphMessage.HEADER_TYPE:
                 /** Broadcast merged new graph to all reachable devices; */
-                sessionManager.broadcastMessage(message, sender);
 
                 final GraphMessage remoteGraphMessage = (GraphMessage) message;
-                synchronized (mPeersGraph.getClass()) {
-                    if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_JOIN)) {
+//                synchronized (mPeersGraph.getClass()) {
+                    if (remoteGraphMessage.getAction() == GraphMessage.ACTION_JOIN) {
                         PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
 //                        Timber.d("Before merge graph, local graph is:");
 //                        mPeersGraph.displayGraph();
@@ -381,33 +398,53 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 //                        remoteGraph.displayGraph();
                         Timber.d("Merge remote graph to own local graph");
                         mPeersGraph.mergeGarph(sender, remoteGraph);
-                        callback.onNewLog("After merge "+sender.getAlias() +" the LocalGraph is: ");
+                        callback.onNewLog("After merge "+sender.getAlias() +" the LocalGraph is: \n");
                         callback.onNewLog(mPeersGraph.displayGraph());
+
+                        remoteGraph.getEdgeMatrix().get(sender.getMacAddress()).put(
+                                localPeer.getMacAddress(),
+                                mPeersGraph.getEdgeMatrix().get(sender.getMacAddress()).get(localPeer.getMacAddress())
+                        );
+                        GraphMessage broadcastGraphMessage = GraphMessage.createOutgoing(null,
+                                GraphMessage.ACTION_JOIN,
+                                GraphMessage.BROADCAST,
+                                remoteGraph);
+                        Timber.d("broadcast graph message ");
+                        sessionManager.broadcastMessage(broadcastGraphMessage,sender);
                     }
-                    if (remoteGraphMessage.getAction().equals(GraphMessage.ACTION_LEFT)) {
+                    if (remoteGraphMessage.getAction() == GraphMessage.ACTION_LEFT) {
                         //TODO:处理设备离开的情况
                         PeersGraph remoteGraph = remoteGraphMessage.getPeersGraph();
 //                        Timber.d("Before replace new  graph, local graph is:");
 //                        mPeersGraph.displayGraph();
                         Timber.d("replace own local graph with remote new graph ");
                         mPeersGraph.trimGraph(sender, remoteGraph);
-                        callback.onNewLog("After delete "+sender.getAlias() +" the LocalGraph is: ");
+                        callback.onNewLog("After delete "+sender.getAlias() +" the LocalGraph is: \n");
                         callback.onNewLog(mPeersGraph.displayGraph());
+                        sessionManager.broadcastMessage(message,sender);
                     }
-                }
+//                }
                 updateForeground(remoteGraphMessage);
                 break;
 
             case DataTransferMessage.HEADER_TYPE:
-                incomingTransfer = new IncomingTransfer((DataTransferMessage) message, sender);
-                // No action is required for DataTransferMessage. Report complete
-                foregroundHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (callback != null)
-                            callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(), sender, null);
-                    }
-                });
+                final DataTransferMessage dataTransferMessage = (DataTransferMessage) message;
+                if(LocalPeer.getLocalMacAddress().equals(dataTransferMessage.getDesc_mac_address())){
+                    // Reach the desc node
+                    final IncomingTransfer incomingTransfer;
+                    incomingTransfer = new IncomingTransfer((DataTransferMessage) message, sender);
+                    // No action is required for DataTransferMessage. Report complete
+                    foregroundHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (callback != null)
+                                callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(), sender, null);
+                        }
+                    });
+                }
+                else{
+                    forward(message,mPeersGraph.getVertexList().get(dataTransferMessage.getDesc_mac_address()));
+                }
                 break;
         }
     }
@@ -420,7 +457,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                 if (callback != null) {
                     LinkedHashMap<String,Peer> vertexes = new LinkedHashMap<>(mPeersGraph.getVertexList());
                     vertexes.remove(localPeer.getMacAddress());
-                    callback.onPeersStatusUpdated(binder, vertexes, remoteGraphMessage.getAction().equals(GraphMessage.ACTION_JOIN));
+                    callback.onPeersStatusUpdated(binder, vertexes, remoteGraphMessage.getAction() == GraphMessage.ACTION_JOIN);
 
                 } else
                     Timber.w("Could not report peer status update, no callback registered");
@@ -450,12 +487,14 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         if (message.getType().equals(DataTransferMessage.HEADER_TYPE)) {
             outgoingTransfer = getOutgoingTransferForFileTransferMessage(message, recipient);
             // No action is required for DataTransferMessage. Report complete
+            final Peer desc = mPeersGraph.getVertexList().get(((DataTransferMessage)message).getDesc_mac_address());
+            callback.onNewLog("Data forward to " + recipient.getAlias() +", desc is " + desc.getAlias() + "\n");
             foregroundHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     if (callback != null) {
                         assert outgoingTransfer != null;
-                        callback.onDataSent(binder, outgoingTransfer.getBodyBytes(), recipient, null);
+                        callback.onDataSent(binder, outgoingTransfer.getBodyBytes(), recipient, desc, null);
                     }
                 }
             });
