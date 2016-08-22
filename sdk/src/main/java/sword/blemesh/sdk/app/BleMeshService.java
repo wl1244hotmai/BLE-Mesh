@@ -60,7 +60,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 
         void onPeersStatusUpdated(@NonNull ServiceBinder binder,
                                   @NonNull LinkedHashMap<String, Peer> vertexes,
-                                  @NonNull boolean isJoin);
+                                  boolean isJoin);
 
         void onNewLog(@NonNull String logText);
     }

@@ -259,7 +259,7 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
     @Override
     public void onPeersStatusUpdated(@NonNull BleMeshService.ServiceBinder binder,
                                      @NonNull LinkedHashMap<String, Peer> vertexes,
-                                     @NonNull boolean isJoinAction){
+                                     boolean isJoinAction){
         peerAdapter.notifyPeersUpdated(vertexes,isJoinAction);
         if(isJoinAction){
             emptyContainer.setVisibility(View.GONE);
