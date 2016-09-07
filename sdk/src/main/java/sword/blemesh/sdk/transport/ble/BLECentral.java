@@ -120,6 +120,7 @@ public class BLECentral {
 
     private void stopScanning() {
         if (isScanning) {
+            Timber.d("stopAdvertising");
             scanner.stopScan(scanCallback);
             scanner = null;
             isScanning = false;

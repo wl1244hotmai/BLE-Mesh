@@ -11,7 +11,7 @@
         android:layout_centerHorizontal="true"
         android:paddingTop="60dp"
         android:text="@string/hello"
-        android:textSize="40sp" />
+        android:textSize="32sp" />
 
     <TextView
         android:id="@+id/prompt"

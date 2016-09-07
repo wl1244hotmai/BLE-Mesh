@@ -19,6 +19,7 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -59,7 +60,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                                  boolean peerIsHost);
 
         void onPeersStatusUpdated(@NonNull ServiceBinder binder,
-                                  @NonNull LinkedHashMap<String, Peer> vertexes,
+                                  @NonNull Map<String, Peer> vertexes,
                                   boolean isJoin);
 
         void onNewLog(@NonNull String logText);
@@ -455,7 +456,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
             @Override
             public void run() {
                 if (callback != null) {
-                    LinkedHashMap<String,Peer> vertexes = new LinkedHashMap<>(mPeersGraph.getVertexList());
+                    Map<String,Peer> vertexes = new LinkedHashMap<>(mPeersGraph.getVertexList());
                     vertexes.remove(localPeer.getMacAddress());
                     callback.onPeersStatusUpdated(binder, vertexes, remoteGraphMessage.getAction() == GraphMessage.ACTION_JOIN);
 

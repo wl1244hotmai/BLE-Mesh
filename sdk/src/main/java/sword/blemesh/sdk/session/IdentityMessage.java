@@ -19,10 +19,8 @@ public class IdentityMessage extends SessionMessage {
     public static final String HEADER_TYPE = "identity";
 
     /** Header keys */
-    public static final String HEADER_TRANSPORTS  = "transports";
     public static final String HEADER_ALIAS       = "alias";
 
-    //TODO: decide whether to delete encryption.
     public static final String BODY_RSSI = "rssi";
 
     private Peer peer;
@@ -31,13 +29,12 @@ public class IdentityMessage extends SessionMessage {
      * Convenience creator for deserialization
      */
     public static IdentityMessage fromHeaders(Map<String, Object> headers) {
-        int transports = headers.containsKey(HEADER_TRANSPORTS) ? (int) headers.get(HEADER_TRANSPORTS) : 0;
 
         Peer peer = new Peer((String) headers.get(HEADER_ALIAS),
                              (String) headers.get(HEADER_MAC_ADDRESS),
                              new Date(),
                              -1,
-                             transports);
+                             0);
 
         return new IdentityMessage((String) headers.get(SessionMessage.HEADER_ID),
                                    peer);
@@ -75,7 +72,6 @@ public class IdentityMessage extends SessionMessage {
         HashMap<String, Object> headerMap = super.populateHeaders();
 
         headerMap.put(HEADER_ALIAS, peer.getAlias());
-        headerMap.put(HEADER_TRANSPORTS, peer.getTransports());
 
         return headerMap;
     }

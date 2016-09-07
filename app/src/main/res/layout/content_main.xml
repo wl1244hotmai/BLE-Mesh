@@ -12,8 +12,10 @@
     tools:context="sword.blemesh.meshmessager.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="sword.blemesh.meshmessager.MainActivity"
+        tools:ignore="MergeRootFrame" />
 </RelativeLayout>

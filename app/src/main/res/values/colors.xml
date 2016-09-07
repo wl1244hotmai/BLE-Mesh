@@ -3,4 +3,25 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="primary_subdued">#09307adf</color>
+    <color name="primary">#ff307adf</color>
+    <color name="primaryDark">#ff22569D</color>
+
+    <color name="message_header_subdued_text">#cfd8dc</color>
+    <color name="message_header">#ff8a8c89</color>
+    <!--#bdbdbd
+    <color name="dull">#738ffe</color>
+    -->
+
+    <color name="messageEntryBackground">#ffffff</color>
+
+    <color name="status_always_online">#4CAF50</color>
+    <color name="status_online_in_foreground">#81C784</color>
+    <color name="status_offline">#BDBDBD</color>
+
+    <color name="remote_online">#ff474747</color>
+    <color name="remote_offline">#BDBDBD</color>
+
+    <color name="welcome_status_bar">#26136c</color>
 </resources>

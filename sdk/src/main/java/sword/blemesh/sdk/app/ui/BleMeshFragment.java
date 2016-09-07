@@ -15,6 +15,9 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import sword.blemesh.sdk.app.BleMeshService;
@@ -81,6 +84,7 @@ public class BleMeshFragment extends Fragment implements ServiceConnection {
     public void setBleMeshCallback(Callback callback) {
         this.callback = callback;
     }
+    public BleMeshService.ServiceBinder getServiceBinder(){return serviceBinder;}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +98,17 @@ public class BleMeshFragment extends Fragment implements ServiceConnection {
 
         if (username == null || servicename == null)
             throw new IllegalStateException("username and servicename cannot be null");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
@@ -129,9 +144,11 @@ public class BleMeshFragment extends Fragment implements ServiceConnection {
             didIssueServiceUnbind = true;
             unBindService();
             unregisterBroadcastReceiver();
+            serviceBound = false;
 
-            if (!shouldServiceContinueInBackground())
+            if (!shouldServiceContinueInBackground()){
                 stopService();
+            }
         }
     }
 
@@ -205,8 +222,9 @@ public class BleMeshFragment extends Fragment implements ServiceConnection {
 
     @Override
     public void onServiceDisconnected(ComponentName componentName) {
+        Timber.d("Something Error");
         Timber.d("Unbound from service");
-        serviceBinder = null;
+        //serviceBinder = null;
         serviceBound = false;
     }
 
@@ -263,4 +281,13 @@ public class BleMeshFragment extends Fragment implements ServiceConnection {
         mBluetoothEnableDialog.show();
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
 }

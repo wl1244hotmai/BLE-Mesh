@@ -120,7 +120,7 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.ViewHolder> {
         }
     }
 
-    public void notifyPeersUpdated(LinkedHashMap<String, Peer> vertexes,
+    public void notifyPeersUpdated(Map<String, Peer> vertexes,
                                    boolean isJoinAction) {
         if (isJoinAction) // JOIN MESSAGE
         {

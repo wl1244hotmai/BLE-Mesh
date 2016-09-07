@@ -116,6 +116,7 @@ public class BLEPeripheral {
 
     private void stopAdvertising() {
         if (isAdvertising) {
+            Timber.d("stopAdvertising");
             advertiser.stopAdvertising(mAdvCallback);
             isAdvertising = false;
         }

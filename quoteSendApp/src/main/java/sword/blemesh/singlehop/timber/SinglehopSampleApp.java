@@ -1,7 +1,9 @@
-package sword.blemesh.singlehop;
+package sword.blemesh.singlehop.timber;
 
 import android.app.Application;
+import android.util.Log;
 
+import sword.blemesh.singlehop.BuildConfig;
 import timber.log.Timber;
 
 /**
@@ -26,23 +28,22 @@ public class SinglehopSampleApp extends Application {
     }
 
     /** A tree which logs important information for crash reporting. */
-    private static class CrashReportingTree extends Timber.HollowTree {
-        @Override public void i(String message, Object... args) {
-            // TODO e.g., Crashlytics.log(String.format(message, args));
-        }
+    private static class CrashReportingTree extends Timber.Tree {
+        @Override protected void log(int priority, String tag, String message, Throwable t) {
+            if (priority == Log.VERBOSE || priority == Log.DEBUG) {
+                return;
+            }
 
-        @Override public void i(Throwable t, String message, Object... args) {
-            i(message, args); // Just add to the log.
-        }
+            FakeCrashLibrary.log(priority, tag, message);
 
-        @Override public void e(String message, Object... args) {
-            i("ERROR: " + message, args); // Just add to the log.
-        }
-
-        @Override public void e(Throwable t, String message, Object... args) {
-            e(message, args);
-
-            // TODO e.g., Crashlytics.logException(t);
+            if (t != null) {
+                if (priority == Log.ERROR) {
+                    FakeCrashLibrary.logError(t);
+                } else if (priority == Log.WARN) {
+                    FakeCrashLibrary.logWarning(t);
+                }
+            }
         }
     }
+
 }

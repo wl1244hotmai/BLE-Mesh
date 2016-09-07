@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import sword.blemesh.sdk.R;
 import sword.blemesh.sdk.app.BleMeshService;
@@ -258,7 +259,7 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
 
     @Override
     public void onPeersStatusUpdated(@NonNull BleMeshService.ServiceBinder binder,
-                                     @NonNull LinkedHashMap<String, Peer> vertexes,
+                                     @NonNull Map<String, Peer> vertexes,
                                      boolean isJoinAction){
         peerAdapter.notifyPeersUpdated(vertexes,isJoinAction);
         if(isJoinAction){

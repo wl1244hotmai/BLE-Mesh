@@ -15,15 +15,17 @@ public class Peer{
     public static final String PEER_MAC_ADDRESS = "mac_address";
     public static final String PEER_LAST_SEEN = "last_seen";
     public static final String PEER_RSSI = "rssi";
-    public static final String PEER_TRANSPORTS = "transports";
 
     private String alias;
     private String MacAddress;
     private Date lastSeen;
     private int rssi;
     private int hops;
-    protected int transports;
 
+    /**
+     * construct from json object received from remote
+     * @param peerJSONObject JSONObject of Peer
+     */
     public Peer(JSONObject peerJSONObject){
         this.alias = (String) peerJSONObject.opt(PEER_ALIAS);
         this.MacAddress = (String) peerJSONObject.opt(PEER_MAC_ADDRESS);
@@ -35,23 +37,47 @@ public class Peer{
             this.lastSeen = new Date(timeMilliSecond);
         }
         this.rssi = (Integer) peerJSONObject.opt(PEER_RSSI);
-        this.transports = (Integer) peerJSONObject.opt(PEER_TRANSPORTS);
         this.hops = 0;
     }
 
+    /**
+     * construct when discovery one remote peer directly.
+     * @param alias alias
+     * @param MacAddress MacAddress
+     * @param lastSeen  lastSeen
+     * @param rssi rssi
+     */
     public Peer(String alias,
                    String MacAddress,
                    Date lastSeen,
-                   int rssi,
-                   int transports) {
-
+                   int rssi) {
         this.alias = alias;
         this.MacAddress = MacAddress;
         this.lastSeen = lastSeen;
         this.rssi = rssi;
-        this.transports = transports;
         this.hops = 0;
     }
+
+    /**
+     * mainly used when construct a peer object from database.
+     * @param alias alias
+     * @param MacAddress MacAddress
+     * @param lastSeen lastSeen
+     * @param rssi rssi
+     * @param hops hops
+     */
+    public Peer(String alias,
+                String MacAddress,
+                Date lastSeen,
+                int rssi,
+                int hops) {
+        this.alias = alias;
+        this.MacAddress = MacAddress;
+        this.lastSeen = lastSeen;
+        this.rssi = rssi;
+        this.hops = hops;
+    }
+
 
     public String getAlias() {
         return alias;
@@ -75,16 +101,12 @@ public class Peer{
         this.rssi = rssi;
     }
 
-    public int getTransports() {
-        return transports;
-    }
-
-    public boolean supportsTransportWithCode(int transportCode) {
-        return (transports & transportCode) == transportCode;
-    }
-
     public void setHops(int hops){
         this.hops = hops;
+    }
+
+    public void updateTime(){
+        lastSeen = new Date();
     }
 
     public int getHops(){
@@ -97,7 +119,6 @@ public class Peer{
         peerJSONObject.put(PEER_MAC_ADDRESS,MacAddress);
         peerJSONObject.put(PEER_LAST_SEEN,lastSeen==null? null:lastSeen.getTime());
         peerJSONObject.put(PEER_RSSI,rssi);
-        peerJSONObject.put(PEER_TRANSPORTS,transports);
         return peerJSONObject;
     }
 

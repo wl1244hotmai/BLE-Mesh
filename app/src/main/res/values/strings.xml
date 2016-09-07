@@ -4,8 +4,23 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Settings</string>
+    <string name="service_switch_start">Start Mesh</string>
+    <string name="service_switch_stop">Stop Mesh</string>
+    <string name="mode_both">Both</string>
+    <string name="mode_scan">Scan Only</string>
+    <string name="mode_advertise">Advertise Only</string>
+
     <string name="view_logs">View Logs</string>
 
+    <!-- WelcomeFragment -->
+    <string name="user_alias_hint">My Name</string>
+    <string name="choose_a_name">Please enter your name</string>
+
+    <!-- user_item -->
+    <string name="user_alias">%1$s (%2$s)</string>
+    <string name="user_info">%1$d hop(s), max rssi: %2$d</string>
+    <string name="user_list">User_List</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
 
 </resources>

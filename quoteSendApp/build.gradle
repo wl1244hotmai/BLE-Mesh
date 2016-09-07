@@ -26,5 +26,4 @@ dependencies {
     compile project(':sdk')
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.nispok:snackbar:2.10.6'
-
 }

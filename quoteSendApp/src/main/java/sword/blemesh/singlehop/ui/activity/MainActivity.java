@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame, PeerFragment.toSend(payloadToShare, PrefsManager.getUsername(this), SERVICE_NAME))
                 .addToBackStack(null)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .setTransition(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .commit();
 
         receiveMenuItem.setVisible(false);

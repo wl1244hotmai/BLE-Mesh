@@ -13,7 +13,11 @@ public class LocalPeer extends Peer {
 
     public LocalPeer(Context context,
                      String alias) {
-        super(alias, getLocalMacAddress(context), null, 0, 0);
+        super(alias, getLocalMacAddress(context), null, 0);
+    }
+
+    public LocalPeer(String alias,String LocalMacAddress){
+        super(alias,LocalMacAddress,null,0);
     }
 
     private static String getLocalMacAddress(Context context) {

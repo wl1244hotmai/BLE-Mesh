@@ -213,6 +213,8 @@ public class LocalGraph extends PeersGraph {
             else{
                 vertexList.get(node).setHops(Shortest_Path_Info_Map.get(node).getHop());
                 vertexList.get(node).setRssi(Shortest_Path_Info_Map.get(node).getRssi());
+                //if changed, modified it's time
+                vertexList.get(node).updateTime();
             }
         }
 

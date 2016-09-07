@@ -28,7 +28,18 @@
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_main"
-         />
+        app:headerLayout="@layout/log_header_main">
+
+        <TextView
+            android:id="@+id/ble_mesh_log"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@string/abc_action_bar_home_description"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:textColor="@android:color/black"
+            android:textSize="12sp" />
+    </android.support.design.widget.NavigationView>
+
 
 </android.support.v4.widget.DrawerLayout>

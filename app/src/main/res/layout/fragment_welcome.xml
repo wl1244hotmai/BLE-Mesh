@@ -1,0 +1,40 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="sword.blemesh.meshmessager.ui.fragment.WelcomeFragment">
+
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="60dp"
+        android:text="@string/app_name"
+        android:textSize="32sp" />
+
+    <TextView
+        android:id="@+id/prompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/header"
+        android:layout_centerHorizontal="true"
+        android:text="@string/choose_a_name"
+        android:textSize="20sp" />
+
+    <EditText
+        android:id="@+id/quote_entry"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/prompt"
+        android:layout_marginTop="16dp"
+        android:layout_centerHorizontal="true"
+        android:hint="@string/user_alias_hint"
+        android:imeOptions="actionDone"
+        android:gravity="center"
+        android:maxLength="@integer/max_alias_length"
+        android:singleLine="true"
+        android:textSize="22sp" />
+
+
+</RelativeLayout>
