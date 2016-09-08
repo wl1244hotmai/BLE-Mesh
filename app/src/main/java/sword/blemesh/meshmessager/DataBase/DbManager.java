@@ -4,16 +4,12 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
-
-import javax.crypto.Mac;
 
 import sword.blemesh.meshmessager.MainActivity;
 import sword.blemesh.sdk.DataUtil;
@@ -185,22 +181,24 @@ public class DbManager{
     }
 
     public Cursor getChatMessages(String macAddress){
-        String[] selectionArgs = {macAddress, MainActivity.local_mac_address};
+        String[] selectionArgs = {macAddress, macAddress};
         String sortOrder = MessageTable.COLUMN_NAME_MESSAGE_TIME + " DESC";
 
         return mContentResolver.query(MeshMessagerContentProvider.MESSAGE_URI,
                 null,
-                MessageTable.COLUMN_NAME_MAC_ADDRESS + " IN (?,?)",
+                MessageTable.COLUMN_NAME_SOURCE_ADDRESS + "=? OR "
+                + MessageTable.COLUMN_NAME_DESC_ADDRESS + "=?",
                 selectionArgs,
                 sortOrder);
     }
 
-    public void insertNewMessage(@Nullable byte[] data, Date date, Peer sender){
+    public void insertNewMessage(@Nullable byte[] data, Date date, Peer sender, Peer desc){
         ContentValues values = new ContentValues();
         ContentValues values_2 = new ContentValues();
 
         values.put(MessageTable.COLUMN_NAME_ALIAS,sender.getAlias());
-        values.put(MessageTable.COLUMN_NAME_MAC_ADDRESS,sender.getMacAddress());
+        values.put(MessageTable.COLUMN_NAME_SOURCE_ADDRESS,sender.getMacAddress());
+        values.put(MessageTable.COLUMN_NAME_DESC_ADDRESS,desc.getMacAddress());
         values.put(MessageTable.COLUMN_NAME_MESSAGE_TIME, DataUtil.storedDateFormatter.format(date));
         if(data ==null){
             values.put(MessageTable.COLUMN_NAME_MESSAGE_BODY,"");
@@ -213,8 +211,8 @@ public class DbManager{
 
         mContentResolver.insert(MeshMessagerContentProvider.MESSAGE_URI,values);
 
-        String selection = PeerTable.COLUMN_NAME_MAC_ADDRESS + " =?";
-        String selectionArgs[] = {sender.getMacAddress()};
+        String selection = PeerTable.COLUMN_NAME_MAC_ADDRESS + " IN (?,?)";
+        String selectionArgs[] = {sender.getMacAddress(),desc.getMacAddress()};
         mContentResolver.update(MeshMessagerContentProvider.PEER_URI,values_2,selection,selectionArgs);
     }
 
@@ -222,9 +220,13 @@ public class DbManager{
      * when restart app and reload database, first reset all entry to status of unavailable
      */
     public boolean resetData() {
-        return mContentResolver.delete(MeshMessagerContentProvider.PEER_URI,
+        boolean success = mContentResolver.delete(MeshMessagerContentProvider.PEER_URI,
                 PeerTable.COLUMN_NAME_MAC_ADDRESS + "!= ?",
                 new String[] {MainActivity.local_mac_address}) > 0;
+        success = success && mContentResolver.delete(MeshMessagerContentProvider.MESSAGE_URI,
+                null,
+                null) > 0;
+        return success;
     }
 
 }

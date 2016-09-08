@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import sword.blemesh.sdk.mesh_graph.LocalGraph;
 import sword.blemesh.sdk.mesh_graph.PeersGraph;
@@ -47,6 +45,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
         void onDataRecevied(@NonNull ServiceBinder binder,
                             @Nullable byte[] data,
                             @NonNull Date date,
+                            @NonNull String sourceAddress,
                             @NonNull Peer sender,
                             @Nullable Exception exception);
 
@@ -182,7 +181,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 
         public void send(byte[] data, Peer recipient) {
             Peer next_reply_node = getNextReply(recipient);
-            addOutgoingTransfer(new OutgoingTransfer(data, recipient, next_reply_node, sessionManager));
+            addOutgoingTransfer(new OutgoingTransfer(data, recipient, next_reply_node, localPeer.getMacAddress(), sessionManager));
         }
 
         /**
@@ -441,7 +440,8 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                         @Override
                         public void run() {
                             if (callback != null)
-                                callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(), incomingTransfer.getDate(),sender, null);
+                                callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(),
+                                        incomingTransfer.getDate(), incomingTransfer.getSource(), sender, null);
                         }
                     });
                 }

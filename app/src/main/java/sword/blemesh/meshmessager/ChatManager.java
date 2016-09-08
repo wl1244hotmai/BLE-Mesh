@@ -98,13 +98,14 @@ public class ChatManager implements BleMeshService.Callback, Serializable {
 
     //<editor-fold desc="BleMeshService Callback"
 
-    public void localSentMessage(byte[] data, Peer localPeer){
-        dbManager.insertNewMessage(data,new Date(),localPeer);
+    public void localSentMessage(byte[] data, Peer localPeer, Peer desc){
+        dbManager.insertNewMessage(data,new Date(),localPeer,desc);
     }
 
     @Override
-    public void onDataRecevied(@NonNull BleMeshService.ServiceBinder binder, @Nullable byte[] data, @NonNull Date date, @NonNull Peer sender, @Nullable Exception exception) {
-        dbManager.insertNewMessage(data,date,sender);
+    public void onDataRecevied(@NonNull BleMeshService.ServiceBinder binder, @Nullable byte[] data, @NonNull Date date,
+                               @NonNull String sourceAddress, @NonNull Peer sender, @Nullable Exception exception) {
+        dbManager.insertNewMessage(data,date,getRemotePeer(sourceAddress),getLocalPeer());
     }
 
     @Override

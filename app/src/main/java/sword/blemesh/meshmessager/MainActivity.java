@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity
     //<editor-fold desc="MessageFragmentCallback">
     @Override
     public void onMessageSendRequested(String message,Peer peer) {
-        mChatManager.localSentMessage(message.getBytes(),mChatManager.getLocalPeer());
+        mChatManager.localSentMessage(message.getBytes(),mChatManager.getLocalPeer(),peer);
         mChatManager.sendMessage(message,peer);
     }
     //</editor-fold>

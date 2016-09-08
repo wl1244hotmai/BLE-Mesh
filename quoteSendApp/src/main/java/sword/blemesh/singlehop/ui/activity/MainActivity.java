@@ -180,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
     @Override
     public void onDataReceived(@NonNull PeerFragment fragment,
                                @Nullable byte[] data,
+                               @NonNull String sourceAddress,
                                @NonNull Peer sender) {
 
         // In this example app, we're only using the headers data
