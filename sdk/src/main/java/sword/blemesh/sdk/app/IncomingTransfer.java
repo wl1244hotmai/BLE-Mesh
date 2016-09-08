@@ -37,6 +37,10 @@ public class IncomingTransfer extends Transfer implements IncomingMessageListene
 
     public Date getDate(){return ((DataTransferMessage)transferMessage).getDate();}
 
+    public String getSource() {
+        return ((DataTransferMessage)transferMessage).getSource();
+    }
+
     public boolean isComplete() {
         return true;
     }
@@ -56,6 +60,7 @@ public class IncomingTransfer extends Transfer implements IncomingMessageListene
     public boolean onMessageDelivered(SessionMessage message, Peer recipient, Exception exception) {
         return false;
     }
+
 
     // </editor-fold desc="MessageDeliveryListener">
 }

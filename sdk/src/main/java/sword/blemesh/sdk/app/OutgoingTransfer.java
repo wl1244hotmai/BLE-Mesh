@@ -33,11 +33,12 @@ public class OutgoingTransfer extends Transfer implements IncomingMessageListene
     public OutgoingTransfer(byte[] data,
                             Peer recipient,
                             Peer next_reply_node,
+                            String sourceAddress,
                             SessionMessageScheduler messageSender) {
 
         init(next_reply_node, messageSender);
 
-        transferMessage = DataTransferMessage.createOutgoing(null, recipient, data);
+        transferMessage = DataTransferMessage.createOutgoing(null, recipient, sourceAddress, data);
         messageSender.sendMessage(transferMessage, next_reply_node);
 
         state = State.AWAITING_DATA_ACK;

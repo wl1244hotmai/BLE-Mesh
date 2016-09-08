@@ -22,8 +22,10 @@ public class DataTransferMessage extends SessionMessage {
     public static final String HEADER_TTL = "TTL";
     public static final String HEADER_EXTRA = "extra";
     public static final String HEADER_SEND_DATE = "sendTime";
+    public static final String HEADER_SOURCE ="source";
 
     private ByteBuffer dataBuffer;
+    private String source_mac_address;
     private String desc_mac_address;
     private Map<String, Object> extraHeaders;
     private int TTL; //Like TTL in internet, initial value is 10 and when TTL == 0, drop this message.
@@ -39,6 +41,7 @@ public class DataTransferMessage extends SessionMessage {
         this.headers      = headers;
         this.bodyLengthBytes   = (int) headers.get(HEADER_BODY_LENGTH);
         this.desc_mac_address = (String) headers.get(HEADER_DESC);
+        this.source_mac_address = (String) headers.get(HEADER_SOURCE);
         this.TTL = (int)headers.get(HEADER_TTL) - 1;
         this.date = new Date((long)headers.get(HEADER_SEND_DATE));
         status            = body == null ? Status.HEADER_ONLY : Status.COMPLETE;
@@ -56,9 +59,10 @@ public class DataTransferMessage extends SessionMessage {
 
     public static DataTransferMessage createOutgoing(@Nullable Map<String, Object> extraHeaders,
                                                      @NonNull Peer recipient,
+                                                     @NonNull String sourceAddress,
                                                      @Nullable byte[] data) {
 
-        return new DataTransferMessage(data, recipient,extraHeaders);
+        return new DataTransferMessage(data, recipient,sourceAddress,extraHeaders);
     }
 
     // To avoid confusion between the incoming constructor which takes a
@@ -66,9 +70,11 @@ public class DataTransferMessage extends SessionMessage {
     // this contstructor behind the static creator 'createOutgoing'
     private DataTransferMessage(@Nullable byte[] data,
                                 @NonNull Peer recipient,
+                                @NonNull String sourceAddress,
                                 @Nullable Map<String, Object> extraHeaders) {
         super();
         this.desc_mac_address = recipient.getMacAddress();
+        this.source_mac_address = sourceAddress;
         this.extraHeaders = extraHeaders;
         this.TTL = TTL_INITIAL_VALUE;
         this.date = new Date();
@@ -91,6 +97,7 @@ public class DataTransferMessage extends SessionMessage {
     protected HashMap<String, Object> populateHeaders() {
         HashMap<String, Object> headerMap = super.populateHeaders();
         headerMap.put(HEADER_DESC,desc_mac_address);
+        headerMap.put(HEADER_SOURCE,source_mac_address);
         headerMap.put(HEADER_TTL,TTL);
         headerMap.put(HEADER_SEND_DATE,date.getTime());
         if (extraHeaders != null)
@@ -135,4 +142,5 @@ public class DataTransferMessage extends SessionMessage {
     }
 
     public Date getDate(){return date;}
+    public String getSource() {return source_mac_address;}
 }
