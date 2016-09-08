@@ -16,6 +16,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import java.util.ArrayDeque;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -45,6 +46,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
 
         void onDataRecevied(@NonNull ServiceBinder binder,
                             @Nullable byte[] data,
+                            @NonNull Date date,
                             @NonNull Peer sender,
                             @Nullable Exception exception);
 
@@ -439,7 +441,7 @@ public class BleMeshService extends Service implements ActivityRecevingMessagesI
                         @Override
                         public void run() {
                             if (callback != null)
-                                callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(), sender, null);
+                                callback.onDataRecevied(binder, incomingTransfer.getBodyBytes(), incomingTransfer.getDate(),sender, null);
                         }
                     });
                 }

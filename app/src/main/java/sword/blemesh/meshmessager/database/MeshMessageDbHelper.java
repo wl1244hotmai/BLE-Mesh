@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class MeshMessageDbHelper extends SQLiteOpenHelper{
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "MeshMessageer.db";
 
     public MeshMessageDbHelper(Context context) {
@@ -20,11 +20,12 @@ public class MeshMessageDbHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(PeerTable.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(MessageTable.SQL_CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        //TODO: upgrade db
+
     }
 
 

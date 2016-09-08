@@ -29,12 +29,12 @@ public class WelcomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_welcome, container, false);
-        EditText entry = (EditText) root.findViewById(R.id.quote_entry);
+        EditText entry = (EditText) root.findViewById(R.id.alias_entry);
         entry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    listener.onUsernameSelected(v.getText().toString());
+                    listener.onUsernameSelected(v.getText().toString(),"");
                 }
                 return false;
             }
@@ -61,7 +61,7 @@ public class WelcomeFragment extends Fragment {
     }
 
     public interface WelcomeFragmentListener {
-        public void onUsernameSelected(String username);
+        public void onUsernameSelected(String username,String userinfo);
     }
 
 }

@@ -8,7 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
-import android.text.method.CharacterPickerDialog;
+import android.transition.Slide;
+import android.transition.TransitionSet;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,8 +19,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 
+import im.delight.android.identicons.Identicon;
+import sword.blemesh.meshmessager.database.DbManager;
+import sword.blemesh.meshmessager.ui.fragment.MessageFragment;
 import sword.blemesh.meshmessager.ui.fragment.UserListFragment;
 import sword.blemesh.meshmessager.ui.fragment.WelcomeFragment;
 import sword.blemesh.sdk.app.BleMeshService;
@@ -31,13 +36,14 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         WelcomeFragment.WelcomeFragmentListener,
         BleMeshFragment.Callback,
-        ChatManager.ChatManagerCallback
+        ChatManager.ChatManagerCallback,
+        UserListFragment.UserListFragmentCallback,
+        MessageFragment.MessageFragmentCallback
 {
     public static String local_mac_address;
 
     private boolean BLEisRunning = false;
 
-    private NavigationView rightDrawerView;
     private DrawerLayout drawer;
     private Toolbar toolbar;
     private TextView logView;
@@ -45,6 +51,10 @@ public class MainActivity extends AppCompatActivity
     private ChatManager mChatManager;
     private BleMeshFragment bleMeshFragment;
     private UserListFragment userListFragment;
+
+    private TextView profileNameTv;
+    private TextView profileInterestTv;
+    private Identicon profileIdenticon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +67,7 @@ public class MainActivity extends AppCompatActivity
         local_mac_address = android.provider.Settings.Secure.getString(getApplicationContext().getContentResolver(), "bluetooth_address");
 
         //initialization
-        mChatManager = new ChatManager(getApplicationContext());
+        mChatManager = new ChatManager(getApplicationContext(),this);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -71,8 +81,11 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         assert navigationView != null;
         navigationView.setNavigationItemSelectedListener(this);
+        View header_view = navigationView.getHeaderView(0);
+        profileIdenticon = (Identicon) header_view.findViewById(R.id.identicon_profile);
+        profileNameTv = (TextView) header_view.findViewById(R.id.username_profile);
+        profileInterestTv = (TextView) header_view.findViewById(R.id.userinfo_profile);
 
-        rightDrawerView = (NavigationView) findViewById(R.id.Log_View);
         logView = (TextView)findViewById(R.id.ble_mesh_log);
         //Check and register user alias name
         if(savedInstanceState==null){
@@ -109,6 +122,11 @@ public class MainActivity extends AppCompatActivity
                 Timber.d("Add bleMesh fragment");
             }
 
+            //set profile drawer
+            profileNameTv.setText(localPeer.getAlias());
+            profileIdenticon.show(localPeer.getAlias());
+
+
             //display user list fragment
             userListFragment = new UserListFragment();
             userListFragment.setDbManager(mChatManager.getDbManager());
@@ -141,7 +159,7 @@ public class MainActivity extends AppCompatActivity
 
     //<editor-fold desc="WelcomeFragment.WelcomeFragmentListener">
     @Override
-    public void onUsernameSelected(String username) {
+    public void onUsernameSelected(String username,String userinfo) {
         toolbar.setVisibility(View.VISIBLE);
         getWindow().setStatusBarColor(getResources().getColor(R.color.primaryDark));
         //insert to db
@@ -258,17 +276,17 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.changeName) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.changeInfo) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.btOn) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.btOff) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.mesh_start) {
+
+        } else if (id == R.id.mesh_stop) {
 
         }
 
@@ -317,4 +335,44 @@ public class MainActivity extends AppCompatActivity
         toolbarAnim.setDuration(500).start();
         statusbarAnim.setDuration(500).start();
     }
+
+    //<editor-fold desc="UserListFragmentCallback">
+    @Override
+    public void onPeerSelected(View identiconView, View usernameView, String peerAddress) {
+        Peer peer = mChatManager.getRemotePeer(peerAddress);
+        if (peer == null) {
+            Timber.w("Could not lookup peer. Cannot show profile");
+            return;
+        }
+        setTitle(peer.getAlias());
+        MessageFragment messageFragment = new MessageFragment();
+        messageFragment.setDbManager(mChatManager.getDbManager());
+        messageFragment.setPeer(mChatManager.getRemotePeer(peerAddress));
+
+
+        final TransitionSet slideTransition = new TransitionSet();
+        slideTransition.addTransition(new Slide());
+        slideTransition.setInterpolator(new AccelerateDecelerateInterpolator());
+        slideTransition.setDuration(300);
+        messageFragment.setEnterTransition(slideTransition);
+        messageFragment.setReturnTransition(slideTransition);
+        messageFragment.setAllowEnterTransitionOverlap(false);
+        messageFragment.setAllowReturnTransitionOverlap(false);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, messageFragment)
+                .addToBackStack("profile")
+                .commit();
+
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="MessageFragmentCallback">
+    @Override
+    public void onMessageSendRequested(String message,Peer peer) {
+        mChatManager.localSentMessage(message.getBytes(),mChatManager.getLocalPeer());
+        mChatManager.sendMessage(message,peer);
+    }
+    //</editor-fold>
 }

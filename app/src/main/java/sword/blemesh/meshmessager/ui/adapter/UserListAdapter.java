@@ -2,8 +2,11 @@ package sword.blemesh.meshmessager.ui.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.support.annotation.BoolRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +28,7 @@ public class UserListAdapter extends BaseAbstractRecycleCursorAdapter<UserListAd
      * callback when one peer item has been pushed.
      */
     public interface MessageSelectedListener {
-        void onMessageSelected(View identiconView, View usernameView, String peerAddress);
+        void onPeerSelected(View identiconView, View usernameView, String peerAddress);
     }
 
     private DbManager dbManager;
@@ -39,15 +42,17 @@ public class UserListAdapter extends BaseAbstractRecycleCursorAdapter<UserListAd
         public View container;
         public TextView alias_view;
         public TextView info_view;
+        public TextView last_message;
         public SymmetricIdenticon identicon;
         String peerAddress;
-
+        boolean isAvailable;
         public ViewHolder(View itemView) {
             super(itemView);
             container = itemView;
             alias_view = (TextView) itemView.findViewById(R.id.peer_alias);
             info_view = (TextView) itemView.findViewById(R.id.peer_info);
-            identicon =  (SymmetricIdenticon) itemView.findViewById(R.id.identicon);
+            last_message = (TextView) itemView.findViewById(R.id.last_message);
+            identicon =  (SymmetricIdenticon) itemView.findViewById(R.id.identicon_user);
         }
     }
 
@@ -77,16 +82,17 @@ public class UserListAdapter extends BaseAbstractRecycleCursorAdapter<UserListAd
         if (holder.peerAddress == null)
             holder.peerAddress = cursor.getString(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_MAC_ADDRESS));
         holder.container.setTag(R.id.view_tag_peer_id, holder.peerAddress);
-        String alias,user_info,isOnline;
-        int isAvailable = cursor.getInt(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_IS_AVAILABLE));
+        String alias,user_info,isOnline,lastMessage;
+        holder.isAvailable = cursor.getInt(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_IS_AVAILABLE)) == 1;
         int color;
-        if(isAvailable!=0){
+        if(holder.isAvailable){
             isOnline = mContext.getString(R.string.online);
             color = mContext.getResources().getColor(R.color.remote_online);
         }else{
             isOnline = mContext.getString(R.string.offline);
             color = mContext.getResources().getColor(R.color.remote_offline);
         }
+        holder.container.setTag(R.id.view_tag_peer_is_available,holder.isAvailable);
 
         alias = cursor.getString(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_ALIAS));
 
@@ -95,8 +101,10 @@ public class UserListAdapter extends BaseAbstractRecycleCursorAdapter<UserListAd
         user_info = mContext.getString(R.string.user_info,
                 cursor.getInt(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_HOPS)),
                 cursor.getInt(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_RSSI)));
+        lastMessage = cursor.getString(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_LAST_MESSAGE));
         holder.info_view.setText(user_info);
         holder.identicon.show(alias);
+        holder.last_message.setText(lastMessage);
     }
 
     @Override
@@ -113,11 +121,14 @@ public class UserListAdapter extends BaseAbstractRecycleCursorAdapter<UserListAd
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (messageSelectedListener != null)
-                    messageSelectedListener.onMessageSelected(v.findViewById(R.id.identicon),
+                if(!(boolean)v.getTag(R.id.view_tag_peer_is_available)){
+                    Snackbar.make(v,mContext.getString(R.string.peer_status_offline),Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                if (messageSelectedListener != null )
+                    messageSelectedListener.onPeerSelected(v.findViewById(R.id.identicon_user),
                             v.findViewById(R.id.peer_alias),
-                            (String) v.getTag(R.id.view_tag_peer_id)
-                            );
+                            (String) v.getTag(R.id.view_tag_peer_id));
             }
         });
         // set the view's size, margins, paddings and layout parameters

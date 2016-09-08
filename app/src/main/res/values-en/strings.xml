@@ -23,6 +23,9 @@
     <string name="mode_both">Both</string>
     <string name="mode_advertise">Advertise Only</string>
     <string name="mode_scan">Scan Only</string>
+    <string name="send">Send</string>
+    <string name="message_entry_hint">Enter Your Message</string>
+    <string name="peer_status_offline">This user is offline now</string>
 
 
 </resources>

@@ -212,11 +212,12 @@ public class BleMeshFragment extends Fragment implements ServiceConnection {
 
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-        serviceBinder = (BleMeshService.ServiceBinder) iBinder;
-        serviceBound = true;
         Timber.d("Bound to service");
-        checkDevicePreconditions();
-
+        if(serviceBinder==null){
+            serviceBinder = (BleMeshService.ServiceBinder) iBinder;
+            checkDevicePreconditions();
+        }
+        serviceBound = true;
         serviceBinder.setActivityReceivingMessages(true);
     }
 

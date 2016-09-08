@@ -18,7 +18,7 @@
         android:layout_height="wrap_content">
 
         <im.delight.android.identicons.SymmetricIdenticon
-            android:id="@+id/identicon_user"
+            android:id="@+id/identicon_message"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_margin="8dp"
@@ -26,51 +26,47 @@
             android:layout_height="48dp" />
 
         <TextView
-            android:id="@+id/peer_alias"
+            android:id="@+id/sender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/identicon_message"
+            android:layout_alignParentTop="true"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical"
+            android:paddingStart="0dp"
+            android:paddingEnd="8dp"
+            android:singleLine="true"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:textStyle="bold"
+            android:text="Paulina Pom pom"
+            android:textColor="#ff474747"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/authoredDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|end"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="8dp"
+            android:layout_toEndOf="@id/sender"
+            android:textColor="#ffbdbdbd"
+            android:text="3 hours ago"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/messageBody"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/identicon_user"
-            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@id/identicon_message"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/sender"
             android:gravity="top|start"
             android:paddingTop="2dp"
-            android:text="@string/user_alias"
-            android:textColor="#ff474747"
+            android:text="What's for dinner?"
             android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/peer_info"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/identicon_user"
-            android:layout_alignParentEnd="true"
-            android:ellipsize="marquee"
-            android:gravity="center_vertical"
-            android:layout_below="@id/peer_alias"
-            android:paddingEnd="8dp"
-            android:paddingStart="0dp"
-            android:singleLine="true"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp"
-            android:textStyle="bold"
-            android:text="@string/user_info"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/last_message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/identicon_user"
-            android:layout_alignParentEnd="true"
-            android:ellipsize="marquee"
-            android:gravity="center_vertical"
-            android:layout_below="@id/peer_info"
-            android:paddingEnd="8dp"
-            android:paddingStart="0dp"
-            android:singleLine="true"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp"
-            android:textStyle="bold"
-            android:text="@string/last_message"
-            android:textSize="14sp" />
     </RelativeLayout>
 </android.support.v7.widget.CardView>

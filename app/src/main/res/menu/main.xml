@@ -4,6 +4,7 @@
     <item
         android:id="@+id/action_switch"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_menu_send"
         android:title="@string/service_switch_start"
         app:showAsAction="never" />
 

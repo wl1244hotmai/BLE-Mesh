@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,12 +21,13 @@ public class DataTransferMessage extends SessionMessage {
     public static final String HEADER_DESC = "message_destination";
     public static final String HEADER_TTL = "TTL";
     public static final String HEADER_EXTRA = "extra";
+    public static final String HEADER_SEND_DATE = "sendTime";
 
     private ByteBuffer dataBuffer;
     private String desc_mac_address;
     private Map<String, Object> extraHeaders;
     private int TTL; //Like TTL in internet, initial value is 10 and when TTL == 0, drop this message.
-
+    private Date date;
     // <editor-fold desc="Incoming Constructors">
 
     DataTransferMessage(@NonNull Map<String, Object> headers,
@@ -38,6 +40,7 @@ public class DataTransferMessage extends SessionMessage {
         this.bodyLengthBytes   = (int) headers.get(HEADER_BODY_LENGTH);
         this.desc_mac_address = (String) headers.get(HEADER_DESC);
         this.TTL = (int)headers.get(HEADER_TTL) - 1;
+        this.date = new Date((long)headers.get(HEADER_SEND_DATE));
         status            = body == null ? Status.HEADER_ONLY : Status.COMPLETE;
 
         if (body != null)
@@ -68,6 +71,7 @@ public class DataTransferMessage extends SessionMessage {
         this.desc_mac_address = recipient.getMacAddress();
         this.extraHeaders = extraHeaders;
         this.TTL = TTL_INITIAL_VALUE;
+        this.date = new Date();
         init();
         if (data != null) {
             setBody(data);
@@ -88,6 +92,7 @@ public class DataTransferMessage extends SessionMessage {
         HashMap<String, Object> headerMap = super.populateHeaders();
         headerMap.put(HEADER_DESC,desc_mac_address);
         headerMap.put(HEADER_TTL,TTL);
+        headerMap.put(HEADER_SEND_DATE,date.getTime());
         if (extraHeaders != null)
             headerMap.put(HEADER_EXTRA, extraHeaders);
 
@@ -129,4 +134,5 @@ public class DataTransferMessage extends SessionMessage {
         return this.desc_mac_address;
     }
 
+    public Date getDate(){return date;}
 }

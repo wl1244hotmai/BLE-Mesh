@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -221,7 +222,7 @@ public class PeerFragment extends BleMeshFragment implements BleMeshService.Call
     }
 
     @Override
-    public void onDataRecevied(@NonNull BleMeshService.ServiceBinder binder, byte[] data, @NonNull Peer sender, Exception exception) {
+    public void onDataRecevied(@NonNull BleMeshService.ServiceBinder binder, byte[] data, Date date, @NonNull Peer sender, Exception exception) {
         if (callback == null) return; // Fragment was detached but not destroyed
 
         callback.onDataReceived(this, data, sender);

@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Map;
 
 import sword.blemesh.sdk.session.DataTransferMessage;

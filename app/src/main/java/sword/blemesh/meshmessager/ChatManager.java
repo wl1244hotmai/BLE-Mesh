@@ -5,12 +5,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 import sword.blemesh.meshmessager.database.DbManager;
 import sword.blemesh.sdk.app.BleMeshService;
 import sword.blemesh.sdk.mesh_graph.Peer;
 import sword.blemesh.sdk.transport.Transport;
+import timber.log.Timber;
 
 import static sword.blemesh.meshmessager.ChatManager.BleMode.*;
 
@@ -36,18 +38,27 @@ public class ChatManager implements BleMeshService.Callback, Serializable {
     private Context   mContext;
     private DbManager dbManager;
     private BleMeshService.ServiceBinder serviceBinder;
+    private Peer localPeer;
+    ChatManagerCallback chatManagerCallback;
 
-    public ChatManager(@NonNull Context context) {
+    public ChatManager(@NonNull Context context,@NonNull ChatManagerCallback callback) {
         mContext = context;
         dbManager = new DbManager(context);
+        chatManagerCallback = callback;
     }
 
     public DbManager getDbManager(){
         return dbManager;
     }
 
+    public void sendMessage(String message,Peer remote){
+        serviceBinder.send(message.getBytes(),remote);
+    }
+
     public Peer getLocalPeer(){
-        return dbManager.getLocalPeer();
+        if(localPeer == null)
+            localPeer = dbManager.getLocalPeer();
+        return localPeer;
     }
 
     public void createLocalPeer(String username,String local_mac_address){
@@ -62,6 +73,10 @@ public class ChatManager implements BleMeshService.Callback, Serializable {
 
     public void resetData(){
         dbManager.resetData();
+    }
+
+    public Peer getRemotePeer(String macAddress) {
+        return dbManager.getRemotePeer(macAddress);
     }
 
     public void startBleMesh(BleMode mode){
@@ -82,14 +97,19 @@ public class ChatManager implements BleMeshService.Callback, Serializable {
     }
 
     //<editor-fold desc="BleMeshService Callback"
-    @Override
-    public void onDataRecevied(@NonNull BleMeshService.ServiceBinder binder, @Nullable byte[] data, @NonNull Peer sender, @Nullable Exception exception) {
 
+    public void localSentMessage(byte[] data, Peer localPeer){
+        dbManager.insertNewMessage(data,new Date(),localPeer);
+    }
+
+    @Override
+    public void onDataRecevied(@NonNull BleMeshService.ServiceBinder binder, @Nullable byte[] data, @NonNull Date date, @NonNull Peer sender, @Nullable Exception exception) {
+        dbManager.insertNewMessage(data,date,sender);
     }
 
     @Override
     public void onDataSent(@NonNull BleMeshService.ServiceBinder binder, @Nullable byte[] data, @NonNull Peer recipient, @NonNull Peer desc, @Nullable Exception exception) {
-
+        Timber.d("data send to %s : %s",desc.getAlias(),desc.getMacAddress());
     }
 
     @Override
@@ -108,7 +128,7 @@ public class ChatManager implements BleMeshService.Callback, Serializable {
 
     @Override
     public void onNewLog(@NonNull String logText) {
-
+        chatManagerCallback.onNewLog(logText);
     }
     //</editor-fold>
 

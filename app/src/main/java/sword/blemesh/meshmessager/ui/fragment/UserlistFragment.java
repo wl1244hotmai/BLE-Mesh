@@ -26,15 +26,15 @@ import sword.blemesh.meshmessager.ui.adapter.UserListAdapter;
  */
 public class UserListFragment extends Fragment implements UserListAdapter.MessageSelectedListener{
 
-    public interface ChatFragmentCallback {
-        public void onMessageSelected(View identiconView, View usernameView, String peerAddress);
+    public interface UserListFragmentCallback {
+        public void onPeerSelected(View identiconView, View usernameView, String peerAddress);
     }
 
-    private ChatFragmentCallback mCallback;
+    private UserListFragmentCallback mCallback;
     private DbManager dbManager;
-    RecyclerView mRecyclerView;
-    UserListAdapter mAdapter;
-    View mRoot;
+    private RecyclerView mRecyclerView;
+    private UserListAdapter mAdapter;
+    private View mRoot;
 
     public UserListFragment(){
 
@@ -70,16 +70,20 @@ public class UserListFragment extends Fragment implements UserListAdapter.Messag
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        try {
+            mCallback = (UserListFragmentCallback) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement ChatFragmentCallback");
+        }
     }
 
     //<editor-fold desc="UserListAdapter.MessageSelectedListener">
     @Override
-    public void onMessageSelected(View identiconView, View usernameView, String peerAddress) {
-
+    public void onPeerSelected(View identiconView, View usernameView, String peerAddress) {
+        mCallback.onPeerSelected(identiconView,usernameView,peerAddress);
     }
     //</editor-fold>
-
-
     public void animateIn() {
         mRoot.setAlpha(0);
         ObjectAnimator animator = ObjectAnimator.ofFloat(mRoot, "alpha", 0f, 1f)

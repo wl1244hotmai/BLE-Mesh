@@ -7,12 +7,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.crypto.Mac;
+
 import sword.blemesh.meshmessager.MainActivity;
+import sword.blemesh.sdk.DataUtil;
 import sword.blemesh.sdk.mesh_graph.LocalPeer;
 import sword.blemesh.sdk.mesh_graph.Peer;
 
@@ -109,7 +113,7 @@ public class DbManager{
         if (cursor != null && cursor.moveToFirst()) {
             String alias = cursor.getString
                     (cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_ALIAS));
-            String address = cursor.getColumnName
+            String address = cursor.getString
                     (cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_MAC_ADDRESS));
             Date date = new Date(cursor.getInt(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_LAST_SEEN)));
             int rssi = cursor.getInt(cursor.getColumnIndexOrThrow(PeerTable.COLUMN_NAME_RSSI));
@@ -120,10 +124,8 @@ public class DbManager{
         return null;
     }
 
-    public boolean createAndUpdateRemotePeers(@NonNull Map<String, Peer> vertexes,
+    public void createAndUpdateRemotePeers(@NonNull Map<String, Peer> vertexes,
                                            boolean isJoin) {
-
-        boolean isSuccess = false;
         if (isJoin) {
             //Join Action
             for (Peer peer : vertexes.values()) {
@@ -179,7 +181,41 @@ public class DbManager{
                 cursor.close();
             }
         }
-        return isSuccess;
+        return;
+    }
+
+    public Cursor getChatMessages(String macAddress){
+        String[] selectionArgs = {macAddress, MainActivity.local_mac_address};
+        String sortOrder = MessageTable.COLUMN_NAME_MESSAGE_TIME + " DESC";
+
+        return mContentResolver.query(MeshMessagerContentProvider.MESSAGE_URI,
+                null,
+                MessageTable.COLUMN_NAME_MAC_ADDRESS + " IN (?,?)",
+                selectionArgs,
+                sortOrder);
+    }
+
+    public void insertNewMessage(@Nullable byte[] data, Date date, Peer sender){
+        ContentValues values = new ContentValues();
+        ContentValues values_2 = new ContentValues();
+
+        values.put(MessageTable.COLUMN_NAME_ALIAS,sender.getAlias());
+        values.put(MessageTable.COLUMN_NAME_MAC_ADDRESS,sender.getMacAddress());
+        values.put(MessageTable.COLUMN_NAME_MESSAGE_TIME, DataUtil.storedDateFormatter.format(date));
+        if(data ==null){
+            values.put(MessageTable.COLUMN_NAME_MESSAGE_BODY,"");
+            values_2.put(PeerTable.COLUMN_NAME_LAST_MESSAGE, "");
+        }
+        else{
+            values.put(MessageTable.COLUMN_NAME_MESSAGE_BODY,new String(data));
+            values_2.put(PeerTable.COLUMN_NAME_LAST_MESSAGE,new String(data));
+        }
+
+        mContentResolver.insert(MeshMessagerContentProvider.MESSAGE_URI,values);
+
+        String selection = PeerTable.COLUMN_NAME_MAC_ADDRESS + " =?";
+        String selectionArgs[] = {sender.getMacAddress()};
+        mContentResolver.update(MeshMessagerContentProvider.PEER_URI,values_2,selection,selectionArgs);
     }
 
     /**

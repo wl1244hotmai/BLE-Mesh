@@ -1,5 +1,7 @@
 package sword.blemesh.sdk.app;
 
+import java.util.Date;
+
 import sword.blemesh.sdk.session.DataTransferMessage;
 import sword.blemesh.sdk.mesh_graph.Peer;
 import sword.blemesh.sdk.session.SessionMessage;
@@ -32,6 +34,8 @@ public class IncomingTransfer extends Transfer implements IncomingMessageListene
     public Peer getSender() {
         return sender;
     }
+
+    public Date getDate(){return ((DataTransferMessage)transferMessage).getDate();}
 
     public boolean isComplete() {
         return true;

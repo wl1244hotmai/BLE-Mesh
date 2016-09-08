@@ -14,6 +14,8 @@ public abstract class PeerTable implements BaseColumns{
     public static final String COLUMN_NAME_RSSI = "Rssi";
     public static final String COLUMN_NAME_HOPS = "Hops";
     public static final String COLUMN_NAME_IS_AVAILABLE = "IsAvailable";
+    public static final String COLUMN_NAME_LAST_MESSAGE = "LastMessage";
+
     /**
      * The interest match degree, the bigger, the matcher the remote peer with local peer.
      * used to customize remote peer priority.
@@ -29,5 +31,6 @@ public abstract class PeerTable implements BaseColumns{
             + COLUMN_NAME_LAST_SEEN + " INTEGER,"
             + COLUMN_NAME_HOPS + " INTEGER,"
             + COLUMN_MATCH_DEGREE + " INTEGER,"
-            + COLUMN_NAME_IS_AVAILABLE + " INTEGER NOT NULL"+ ")";
+            + COLUMN_NAME_IS_AVAILABLE + " INTEGER NOT NULL,"
+            + COLUMN_NAME_LAST_MESSAGE + " TEXT" + ")";
 }

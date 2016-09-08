@@ -15,6 +15,7 @@
     <!-- WelcomeFragment -->
     <string name="user_alias_hint">My Name</string>
     <string name="choose_a_name">Please enter your name</string>
+    <string name="choose_your_interest">Choose Your Interest</string>
 
     <!-- user_item -->
     <string name="user_alias">%1$s (%2$s)</string>
@@ -22,5 +23,23 @@
     <string name="user_list">User_List</string>
     <string name="online">Online</string>
     <string name="offline">Offline</string>
+    <string name="peer_status_offline">This user is offline now</string>
+
+
+    <!-- message fragment-->
+    <string name="send">Send</string>
+    <string name="message_entry_hint">Enter Your Message</string>
+
+    <!-- drawer menu-->
+    <string name="ble_mesh_switcher">BLE-Mesh Switcher</string>
+    <string name="bt_on">Bluetooth On</string>
+    <string name="bt_off">Bluetooth Off</string>
+    <string name="bluetooth_switcher">Bluetooth Switcher</string>
+    <string name="change_name">Change Name</string>
+    <string name="change_interest">Change Interest</string>
+    <string name="profile_setting">Profile Setting</string>
+    <string name="share">Share</string>
+    <string name="last_message">last_message is : …</string>
+
 
 </resources>
