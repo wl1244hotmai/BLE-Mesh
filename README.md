@@ -21,8 +21,10 @@ and then communicate with that device.
 #Screenshots
 1. 发现周围节点，包括直连设备和多跳连接的设备
 1. Find nearby users, including direct connect remote peer, and multi-hop connect peer.
-![image](https://github.com/wl1244hotmai/BLE-Mesh/blob/master/IMG_7606.MOV_20160909_225930.166.jpg)
+![image](https://github.com/wl1244hotmai/BLE-Mesh/blob/master/IMG_7606.MOV_20160909_225617.566.jpg)
+
 2. 与其他用户聊天
 2. Chat with any one of them, if multi-hop,then message will forward through middle node to the destination.
-![image](https://github.com/wl1244hotmai/BLE-Mesh/blob/master/IMG_7606.MOV_20160909_225617.566.jpg)
+![image](https://github.com/wl1244hotmai/BLE-Mesh/blob/master/IMG_7606.MOV_20160909_225930.166.jpg)
+
 
