@@ -8,7 +8,6 @@ folk from https://github.com/OnlyInAmerica/BLEMeshChat
 ( 3 ). 利用图最短路径算法，构建路由机制，实现消息在蓝牙设备之间的多跳转发。 
 利用BLE Mesh构建上层聊天应用，用户不联网，直接通过蓝牙BLE就可以和周边的设备聊天。（包括直连设备和多跳设备）
 
-# BLE-Mesh
 An BLE based mesh netowork platform for android
 
 folk from https://github.com/OnlyInAmerica/BLEMeshChat
