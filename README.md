@@ -6,8 +6,11 @@ demo视频可见（http://pan.baidu.com/s/1eRF9DdC）
 folk from https://github.com/OnlyInAmerica/BLEMeshChat（该项目没有能实现多跳的Mesh网络）
 
 本项目主要功能包括： 
-( 1 ). 基于BLE进行设备发现，\r
+
+( 1 ). 基于BLE进行设备发现，
+
 ( 2 ). 利用BLE连接，设备之间分享所知的其他节点信息，形成Mesh网络，
+
 ( 3 ). 利用图最短路径算法，构建路由机制，实现消息在蓝牙设备之间的多跳转发。 
 利用BLE Mesh构建上层聊天应用，用户不联网，直接通过蓝牙BLE就可以和周边的设备聊天。（包括直连设备和多跳设备）
 
