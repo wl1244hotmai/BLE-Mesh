@@ -1,8 +1,9 @@
 # BLE-Mesh
+demo视频可见（http://pan.baidu.com/s/1eRF9DdC）
 传统的对等通信（Wi-Fi 直连、蓝牙）只能支持一对一的通信，无法扩展。 
 本项目基于Bluetooth Low Energy (BLE)，通过扩展实现多跳转发机制，组建Mesh网络，使得设备可以同时和周围多台设备通信。 
 folk from https://github.com/OnlyInAmerica/BLEMeshChat（该项目没有能实现多跳的Mesh网络）
-主要功能包括： 
+本项目主要功能包括： 
 ( 1 ). 基于BLE进行设备发现， 
 ( 2 ). 利用BLE连接，设备之间分享所知的其他节点信息，形成Mesh网络， 
 ( 3 ). 利用图最短路径算法，构建路由机制，实现消息在蓝牙设备之间的多跳转发。 
