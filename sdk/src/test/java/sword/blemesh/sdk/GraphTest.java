@@ -25,7 +25,7 @@ public class GraphTest {
         assertEquals(4, 2 + 2);
     }
 
-    @Test
+    //@Test
     public void graph_merge_test() throws Exception {
         //图初始化和开始的几个邻接点  node2<->local<->node3
         Peer mLocalNode = new Peer("local","192:1:1:100", null, 0, 0);
@@ -61,7 +61,7 @@ public class GraphTest {
         copyGraph.displayGraph();
     }
 
-    //@Test
+    @Test
     public void shortest_path_test(){
         Peer mLocalNode = new Peer("local","192.1.1.100", null, 0, 0);
         LocalGraph mGraph = new LocalGraph(mLocalNode);
@@ -75,35 +75,35 @@ public class GraphTest {
         mGraph.addMatrixRow("192.1.1.3");
         mGraph.addMatrixRow("192.1.1.4");
 
-
         mGraph.insertEdge(new PeersEdge("192.1.1.100","192.1.1.1",20));
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.100",21));
+        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.100",20));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.100","192.1.1.2",30));
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.100",31));
+        mGraph.insertEdge(new PeersEdge("192.1.1.100","192.1.1.2",45));
+        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.100",45));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.2",35));
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.1",26));
+        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.2",30));
+        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.1",30));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.3",28));
-        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.1",29));
+        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.3",100));
+        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.1",100));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.4",45));
-        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.1",46));
+        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.4",100));
+        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.1",100));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.4",25));
-        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.2",26));
+        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.4",100));
+        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.2",100));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.3",47));
-        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.2",48));
+        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.3",45));
+        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.2",45));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.4",17));
-        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.3",18));
+        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.4",30));
+        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.3",30));
 
-//        mGraph.displayGraph();
-//        mGraph.calCluateShortestPath();
-//        mGraph.displayAllShortestPath();
+        mGraph.displayGraph();
+        mGraph.calCluateShortestPath();
+        mGraph.displayAllShortestPath();
 
+/*
         Peer remoteNode = new Peer("remote","192.1.1.10",new Date(),30,1);
         LocalGraph remoteGraph = new LocalGraph(remoteNode);
         remoteGraph.newDirectRemote(new Peer("node5","192.1.1.11",new Date(),50,1));
@@ -124,6 +124,7 @@ public class GraphTest {
         mGraph.displayGraph();
         mGraph.calCluateShortestPath();
         mGraph.displayAllShortestPath();
+*/
 
     }
 }

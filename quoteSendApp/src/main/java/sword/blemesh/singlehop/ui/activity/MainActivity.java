@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
         showSubtitle(true);
     }
 
+    @Override
     public void onReceiveButtonClick() {
         logView.setText("");
         getSupportFragmentManager().beginTransaction()

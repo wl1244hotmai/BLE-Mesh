@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QuoteSendApp</string>
+    <string name="mode_both">广播并扫描</string>
+    <string name="mode_advertise">只广播</string>
+    <string name="mode_scan">只扫描</string>
+</resources>

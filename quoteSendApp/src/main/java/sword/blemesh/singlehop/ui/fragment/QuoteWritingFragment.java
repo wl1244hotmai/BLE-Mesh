@@ -2,8 +2,10 @@ package sword.blemesh.singlehop.ui.fragment;
 
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ public class QuoteWritingFragment extends Fragment {
 
         public void onShareRequested(String quote);
         public void onBothSendAndReceive(String quote);
+        public void onReceiveButtonClick();
     }
 
     private WritingFragmentListener listener;
@@ -39,12 +42,41 @@ public class QuoteWritingFragment extends Fragment {
         root.findViewById(R.id.share_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onShareRequested(quoteEntry.getText().toString());
+                showModeDialog();
             }
         });
 
         return root;
     }
+
+    public void showModeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        String items[] = {getString(R.string.mode_both),
+                getString(R.string.mode_scan),
+                getString(R.string.mode_advertise)};
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        listener.onBothSendAndReceive(quoteEntry.getText().toString());
+                        break;
+                    case 1:
+                        listener.onShareRequested(quoteEntry.getText().toString());
+                        break;
+                    case 2:
+                        listener.onReceiveButtonClick();
+                        break;
+                    default:
+                        throw new IllegalStateException("Press illegal button in dialog");
+                }
+            }
+        });
+        AlertDialog dialog=builder.create();//获取dialog
+        dialog.show();//显示对话框
+    }
+
+
 
     @Override
     public void onAttach(Activity activity) {

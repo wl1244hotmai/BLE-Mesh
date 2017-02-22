@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BleMesh</string>
+    <string name="app_name">QuoteSendApp</string>
 
     <!--  <string name="share_file">Share File</string> -->
 
@@ -13,6 +13,9 @@
     <string name="ok">OK</string>
     <string name="quote_and_author">\'%1$s\'</string>
     <string name="quote_sent">Quote Sent</string>
+    <string name="mode_both">Both</string>
+    <string name="mode_scan">Scan Only</string>
+    <string name="mode_advertise">Advertise Only</string>
 
     <!-- WelcomeFragment -->
     <string name="hello">hello</string>

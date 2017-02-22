@@ -17,20 +17,20 @@ folk from https://github.com/OnlyInAmerica/BLEMeshChat（该项目没有能实�
 An BLE based mesh netowork platform for android
 
 folk from https://github.com/OnlyInAmerica/BLEMeshChat
-BLEMeshChat don't support multi hop well.
+BLEMeshChat don't support multi hops well.
 each device only connect to around every other devices to from a mesh net.
 which don't support goal directed connection.
 
-This project hope to realize that device can form a multi hop net, and choose specific remote device which is reachable by one hop or multi hops.
+This project hope to realize that device can form a multi hops net, and choose specific remote device which is reachable by one hops or multi hops.
 and then communicate with that device.
 
 #Screenshots
 1. 发现周围节点，包括直连设备和多跳连接的设备
-1. Find nearby users, including direct connect remote peer, and multi-hop connect peer.
+1. Find nearby users, including direct connect remote peer, and multi-hops connect peer.
 ![image](https://github.com/wl1244hotmai/BLE-Mesh/blob/master/IMG_7606.MOV_20160909_225617.566.jpg)
 
 2. 与其他用户聊天
-2. Chat with any one of them, if multi-hop,then message will forward through middle node to the destination.
+2. Chat with any one of them, if multi-hops,then message will forward through middle node to the destination.
 ![image](https://github.com/wl1244hotmai/BLE-Mesh/blob/master/IMG_7606.MOV_20160909_225930.166.jpg)
 
 
