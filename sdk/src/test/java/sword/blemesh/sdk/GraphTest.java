@@ -25,7 +25,7 @@ public class GraphTest {
         assertEquals(4, 2 + 2);
     }
 
-    //@Test
+    @Test
     public void graph_merge_test() throws Exception {
         //图初始化和开始的几个邻接点  node2<->local<->node3
         Peer mLocalNode = new Peer("local","192:1:1:100", null, 0, 0);
@@ -61,7 +61,7 @@ public class GraphTest {
         copyGraph.displayGraph();
     }
 
-    @Test
+    //@Test
     public void shortest_path_test(){
         Peer mLocalNode = new Peer("local","192.1.1.100", null, 0, 0);
         LocalGraph mGraph = new LocalGraph(mLocalNode);

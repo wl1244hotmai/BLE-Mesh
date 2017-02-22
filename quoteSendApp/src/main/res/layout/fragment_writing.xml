@@ -8,7 +8,7 @@
     <EditText
         android:id="@+id/quote_entry"
         android:layout_width="280dp"
-        android:layout_height="250dp"
+        android:layout_height="200dp"
         android:layout_marginTop="64dp"
         android:layout_centerHorizontal="true"
         android:gravity="center"
@@ -36,7 +36,7 @@
         android:layout_below="@id/quote_entry"
         android:layout_width="wrap_content"
         android:layout_height="70dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="60dp"
         android:layout_alignStart="@id/quote_entry"
         android:layout_alignEnd="@id/quote_entry"
         android:layout_gravity="center"
@@ -44,18 +44,6 @@
         android:textColor="@android:color/white"
         android:text="@string/send"/>
 
-
-    <Button
-        android:id="@+id/both_mode"
-        android:layout_width="wrap_content"
-        android:layout_height="70dp"
-        android:layout_gravity="center"
-        android:textSize="18sp"
-        android:textColor="@android:color/white"
-        android:text="@string/both_mode"
-        android:layout_below="@+id/share_button"
-        android:layout_alignEnd="@+id/share_button"
-        android:layout_alignStart="@+id/share_button" />
 
 </RelativeLayout>
 

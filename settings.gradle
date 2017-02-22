@@ -1,1 +1,1 @@
-include ':app', ':quoteSendApp', ':sdk'
+include ':MeshMessager', ':quoteSendApp', ':sdk'

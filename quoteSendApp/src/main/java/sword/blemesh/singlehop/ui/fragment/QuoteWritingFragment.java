@@ -42,12 +42,7 @@ public class QuoteWritingFragment extends Fragment {
                 listener.onShareRequested(quoteEntry.getText().toString());
             }
         });
-        root.findViewById(R.id.both_mode).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onBothSendAndReceive(quoteEntry.getText().toString());
-            }
-        });
+
         return root;
     }
 

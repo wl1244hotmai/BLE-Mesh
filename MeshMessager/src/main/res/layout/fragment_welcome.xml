@@ -27,7 +27,7 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/prompt"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="80dp"
         android:layout_centerHorizontal="true"
         android:hint="@string/user_alias_hint"
         android:imeOptions="actionDone"
@@ -36,17 +36,5 @@
         android:singleLine="true"
         android:textSize="22sp" />
 
-    <EditText
-        android:id="@+id/info_entry"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/alias_entry"
-        android:layout_marginTop="48dp"
-        android:layout_centerHorizontal="true"
-        android:hint="@string/choose_your_interest"
-        android:gravity="center"
-        android:maxLength="@integer/max_alias_length"
-        android:singleLine="true"
-        android:textSize="16sp" />
 
 </RelativeLayout>

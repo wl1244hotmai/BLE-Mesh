@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNewLog(@NonNull String logText) {
-        logView.append(logText);
+        logView.append(logText + "\n");
     }
 
 
