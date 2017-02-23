@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
 
         receiveMenuItem.setVisible(false);
         toolbar.setNavigationIcon(R.mipmap.ic_cancel);
-        toolbar.setTitle(getString(R.string.sending_quote));
+        toolbar.setTitle(getString(R.string.discovering));
         showSubtitle(true);
     }
 
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements Toolbar.OnMenuIte
 
         receiveMenuItem.setVisible(false);
         toolbar.setNavigationIcon(R.mipmap.ic_cancel);
-        toolbar.setTitle(getString(R.string.receiving_quote));
+        toolbar.setTitle(getString(R.string.discovering));
         showSubtitle(true);
     }
 

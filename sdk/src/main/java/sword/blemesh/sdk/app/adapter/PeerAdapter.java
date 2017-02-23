@@ -80,7 +80,7 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.ViewHolder> {
         String text = peer.getAlias() == null ?
                 "Unnamed device,mac: =" + peer.getMacAddress() :
                 peer.getAlias();
-        text += " hops: " + peer.getHops() + " worst rssi in path: -" + peer.getRssi()+"db";
+        text += "\nhops: " + peer.getHops() + " worst rssi in path: -" + peer.getRssi()+"db";
         holder.textView.setText(text);
         holder.container.setTag(peer);
     }

@@ -1,11 +1,16 @@
 package sword.blemesh.sdk.mesh_graph;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Stack;
 
 import timber.log.Timber;
@@ -18,49 +23,62 @@ public class LocalGraph extends PeersGraph {
     private static final int MAX_HOPS = 20;
     private static final int MAX_RSSI = 200;
     private static final int MAX_Metric = 20;
-    class Shortest_Path_Info {
+    private Comparator cmp = new Comparator<Integer>() {
+        @Override
+        public int compare(Integer e1, Integer e2) {
+            return e2 - e1;
+        }
+    };
+    private class Shortest_Path_Info {
         private String prev_node_address;
         private int rssi;
-        private int rssiMetric;
+        private Queue<Integer> rssiMetricPriorityQueue;
         private int hops;
 
         Shortest_Path_Info(){
             rssi = 0;
-            rssiMetric = MAX_Metric;
+            rssiMetricPriorityQueue = new PriorityQueue<>(5,new Comparator<Integer>() {
+                @Override
+                public int compare(Integer e1, Integer e2) {
+                    return e2 - e1;
+                }
+            });
             hops = MAX_HOPS;
             prev_node_address = null;
         }
 
-        public Shortest_Path_Info setRssiMetric(int rm){rssiMetric = rm; return this;}
-        public int getRssiMetric(){return rssiMetric;}
+        Shortest_Path_Info setRssiMetricQueue(Queue<Integer> rmq){rssiMetricPriorityQueue = rmq; return this;}
+        Queue<Integer> getRssiMetricQueue(){return rssiMetricPriorityQueue;}
+        void addRssiMetrictoQueue(int rm){rssiMetricPriorityQueue.add(rm);}
 
-        public Shortest_Path_Info setPrevNode(String prev){
+        Shortest_Path_Info setPrevNode(String prev){
             this.prev_node_address = prev;
             return this;
         }
 
-        public Shortest_Path_Info setHops(int hops){
+        Shortest_Path_Info setHops(int hops){
             this.hops = hops;
             return this;
         }
-        private void increaseHops(){
+        void increaseHops(){
             hops++;
         }
-        public int getHops(){
+        int getHops(){
             return this.hops;
         }
-        public Shortest_Path_Info setRssi(int r){
+        Shortest_Path_Info setRssi(int r){
             rssi = r;
             return this;
         }
-        public Shortest_Path_Info newRssi(int rssi){
+        Shortest_Path_Info newRssi(int rssi){
             this.rssi = this.rssi > rssi ? this.rssi : rssi;
             return this;
         }
-        public String getPrev_node_address(){return this.prev_node_address;}
+        String getPrev_node_address(){return this.prev_node_address;}
         public int getRssi() {return this.rssi;}
     }
-    public int calMetricbyRSSI(int r){
+
+    private int calMetricbyRSSI(int r){
         if(r<=30)
             return 1;
         if(r<=40)
@@ -84,6 +102,15 @@ public class LocalGraph extends PeersGraph {
         if(r<=90)
             return 11;
         return MAX_Metric;
+    }
+
+    private boolean compareQueue(Queue<Integer> q1, Queue<Integer> q2){
+        Integer[] a1 = q1.toArray(new Integer[0]);
+        Integer[] a2 = q2.toArray(new Integer[0]);
+        for (int i = a1.length-1;i>=0;i--) {
+            if(a1[i] > a2[i]) return true;
+        }
+        return false;
     }
 
     private Peer localNode;
@@ -189,7 +216,7 @@ public class LocalGraph extends PeersGraph {
         }
 
         //initialization
-        Shortest_Path_Info_Map.get(localNode.getMacAddress()).setHops(0).setRssiMetric(0).setRssi(0);
+        Shortest_Path_Info_Map.get(localNode.getMacAddress()).setHops(0).setRssi(0);
         String this_visit, next_visit;
         next_visit = localNode.getMacAddress();
 
@@ -202,21 +229,27 @@ public class LocalGraph extends PeersGraph {
 
             int worst_rssi_this_route = MAX_RSSI;
             int min_hops_these_nodes = MAX_HOPS;
-            int min_metric_these_nodes = MAX_Metric;
+            Queue<Integer> min_metricQueue = new PriorityQueue<>(5,
+                    new Comparator<Integer>() {
+                        public int compare(Integer e1, Integer e2) {
+                            return e2 - e1;
+                        }}
+            );
 
             for (String desc : edgeRow.keySet()) {
                 //松弛
                 adjacent = Shortest_Path_Info_Map.get(desc);
-                worst_rssi_this_route = Math.max(edgeRow.get(desc),this_node.getRssi());
-                int metric = calMetricbyRSSI(worst_rssi_this_route);
-                if(adjacent.getHops() != MAX_HOPS && metric == MAX_Metric) continue;
-                if(this_node.getHops()+1 < adjacent.getHops()
-                 || (metric<MAX_Metric && adjacent.getRssiMetric() == MAX_Metric)
-                 || (this_node.getHops()+1 == adjacent.getHops() && metric < adjacent.getRssiMetric())) {
+                worst_rssi_this_route = Math.max(this_node.getRssi(),edgeRow.get(desc));
+                Queue<Integer> tempQueue1 = new PriorityQueue<>(5,cmp);
+                tempQueue1.addAll(this_node.getRssiMetricQueue());
+                tempQueue1.add(calMetricbyRSSI(edgeRow.get(desc)));
+
+                if(needToLoose(adjacent.getHops(),this_node.getHops()+1,adjacent.getRssiMetricQueue(),tempQueue1))
+                {
                     adjacent.setPrevNode(this_visit)
                             .setHops(this_node.getHops() + 1)
                             .setRssi(worst_rssi_this_route)
-                            .setRssiMetric(metric);
+                            .setRssiMetricQueue(tempQueue1);
                 }
             }
 
@@ -224,13 +257,25 @@ public class LocalGraph extends PeersGraph {
 
             for (String key : unVisited) {
                 adjacent = Shortest_Path_Info_Map.get(key);
-                if (min_hops_these_nodes > adjacent.getHops()
-                  || (min_hops_these_nodes == adjacent.getHops() && min_metric_these_nodes > adjacent.getRssiMetric())) {
+                if (needToLoose(min_hops_these_nodes,adjacent.getHops(),min_metricQueue,adjacent.getRssiMetricQueue())){
                     next_visit = key;
                     min_hops_these_nodes = adjacent.getHops();
-                    min_metric_these_nodes = adjacent.getRssiMetric();
+                    min_metricQueue = adjacent.getRssiMetricQueue();
                 }
             }
+
+            System.out.println("this_visit: " + this_visit);
+            for(String desc : Shortest_Path_Info_Map.keySet()){
+                Shortest_Path_Info node = Shortest_Path_Info_Map.get(desc);
+                System.out.println(desc + ": " + node.getHops() + " " + node.getPrev_node_address() + " " + node.getRssi()
+                + " " + node.getRssiMetricQueue() + " ");
+                Queue<Integer> temp = new PriorityQueue<>(5,cmp);
+                while(!temp.isEmpty()){
+                    System.out.println(temp.poll());
+                }
+            }
+            System.out.println();
+
             if(next_visit.equals(this_visit)) break;
         }
 
@@ -260,6 +305,21 @@ public class LocalGraph extends PeersGraph {
 //            }
 //        }
 
+    }
+
+    private boolean needToLoose(int hops, int hops1, Queue<Integer> rssiMetricQueue, Queue<Integer> rssiMetricQueue1) {
+        if(hops == 20) return true;
+        if(hops == 0 || hops1==20) return false;
+        int rssiMetric = rssiMetricQueue.peek();
+        int rssiMetric1 = rssiMetricQueue1.peek();
+        if(rssiMetric==MAX_Metric && rssiMetric1<MAX_Metric) return true;
+        if(rssiMetric==MAX_Metric && rssiMetric1==MAX_Metric) return hops > hops1;
+        if(rssiMetric<MAX_Metric && rssiMetric<MAX_Metric)
+            if (hops > hops1) return true;
+            else if(hops == hops1){
+                return compareQueue(rssiMetricQueue,rssiMetricQueue1);
+            }
+        return false;
     }
 
     public Peer getNextReply(String desc){
@@ -298,13 +358,15 @@ public class LocalGraph extends PeersGraph {
         Stack<String> shortestPath = new Stack<>();
         String address = desc;
         Shortest_Path_Info this_info;
-        int rssiMetric = Shortest_Path_Info_Map.get(desc).getRssiMetric();
-        String shortest_path = "desc:" + desc + " metric:" + rssiMetric + " wrost rssi:" + Shortest_Path_Info_Map.get(desc).getRssi() + " ";
         while(address!=null){
             shortestPath.push(address);
             this_info = Shortest_Path_Info_Map.get(address);
             address = this_info.getPrev_node_address();
         }
+        if(shortestPath.size() == 1)
+            return "";
+        int rssiMetric = Shortest_Path_Info_Map.get(desc).getRssiMetricQueue().peek();
+        String shortest_path = "desc:" + desc + " metric:" + rssiMetric + " wrost rssi:" + Shortest_Path_Info_Map.get(desc).getRssi() + " ";
         while(!shortestPath.isEmpty()){
             shortest_path+=shortestPath.peek();
             shortestPath.pop();

@@ -69,35 +69,43 @@ public class GraphTest {
         mGraph.insertVertex(new Peer("node2","192.1.1.2",new Date(),30,1));
         mGraph.insertVertex(new Peer("node3","192.1.1.3",new Date(),35,1));
         mGraph.insertVertex(new Peer("node4","192.1.1.4",new Date(),25,1));
+        mGraph.insertVertex(new Peer("node5","192.1.1.5",new Date(),25,1));
 
         mGraph.addMatrixRow("192.1.1.1");
         mGraph.addMatrixRow("192.1.1.2");
         mGraph.addMatrixRow("192.1.1.3");
         mGraph.addMatrixRow("192.1.1.4");
+        mGraph.addMatrixRow("192.1.1.5");
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.100","192.1.1.1",20));
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.100",20));
+        mGraph.insertEdge(new PeersEdge("192.1.1.100","192.1.1.1",50));
+        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.100",50));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.100","192.1.1.2",45));
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.100",45));
+        mGraph.insertEdge(new PeersEdge("192.1.1.100","192.1.1.2",50));
+        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.100",50));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.2",30));
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.1",30));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.2",30));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.1",30));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.3",100));
-        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.1",100));
+        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.3",20));
+        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.1",20));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.4",100));
-        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.1",100));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.1","192.1.1.4",100));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.1",100));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.4",100));
-        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.2",100));
+        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.4",10));
+        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.2",10));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.3",45));
-        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.2",45));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.2","192.1.1.3",80));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.2",80));
 
-        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.4",30));
-        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.3",30));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.4",45));
+        //mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.3",40));
+
+        mGraph.insertEdge(new PeersEdge("192.1.1.3","192.1.1.5",30));
+        mGraph.insertEdge(new PeersEdge("192.1.1.5","192.1.1.3",30));
+
+        mGraph.insertEdge(new PeersEdge("192.1.1.4","192.1.1.5",40));
+        mGraph.insertEdge(new PeersEdge("192.1.1.5","192.1.1.4",40));
 
         mGraph.displayGraph();
         mGraph.calCluateShortestPath();
